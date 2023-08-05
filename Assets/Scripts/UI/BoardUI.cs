@@ -4,6 +4,7 @@ using UnityEngine;
 namespace Chess.Game {
 	public class BoardUI : MonoBehaviour {
 		public PieceTheme pieceTheme;
+		public Piece3DTheme piece3DTheme;
 		public BoardTheme boardTheme;
 		public bool showLegalMoves;
 
@@ -11,16 +12,77 @@ namespace Chess.Game {
 
 		MeshRenderer[, ] squareRenderers;
 		SpriteRenderer[, ] squarePieceRenderers;
+		GameObject[, ] squarePiece3DRenderers;
 		Move lastMadeMove;
 		MoveGenerator moveGenerator;
 
-		const float pieceDepth = -0.1f;
-		const float pieceDragDepth = -0.2f;
+		const float pieceDepth = -3f;
+		const float pieceDragDepth = -4.1f;
+		const float piece3DDepth = 0f;
+		const float piece3DDragDepth = -1f;
 
 		void Awake () {
 			moveGenerator = new MoveGenerator ();
 			CreateBoardUI ();
 
+		}
+
+		void CreateBoardUI()
+		{
+
+			Shader squareShader = Shader.Find("Unlit/Color");
+			squareRenderers = new MeshRenderer[8, 8];
+			squarePieceRenderers = new SpriteRenderer[8, 8];
+			squarePiece3DRenderers = new GameObject[8, 8];
+			for (int rank = 0; rank < 8; rank++)
+			{
+				for (int file = 0; file < 8; file++)
+				{
+					// Create square
+					Transform square = GameObject.CreatePrimitive(PrimitiveType.Quad).transform;
+					square.parent = transform;
+					square.name = BoardRepresentation.SquareNameFromCoordinate(file, rank);
+					square.position = PositionFromCoord(file, rank, 0);
+					Material squareMaterial = new Material(squareShader);
+
+					squareRenderers[file, rank] = square.gameObject.GetComponent<MeshRenderer>();
+					squareRenderers[file, rank].material = squareMaterial;
+
+					// Create piece sprite renderer for current square
+					SpriteRenderer pieceRenderer = new GameObject("Piece").AddComponent<SpriteRenderer>();
+					pieceRenderer.transform.parent = square;
+					pieceRenderer.transform.position = PositionFromCoord(file, rank, pieceDepth);
+					pieceRenderer.transform.localScale = Vector3.one * 100 / (2000 / 6f);
+					squarePieceRenderers[file, rank] = pieceRenderer;
+				}
+			}
+
+			ResetSquareColours();
+		}
+
+		void ResetSquarePositions()
+		{
+			for (int rank = 0; rank < 8; rank++)
+			{
+				for (int file = 0; file < 8; file++)
+				{
+					if (file == 0 && rank == 0)
+					{
+						//Debug.Log (squarePieceRenderers[file, rank].gameObject.name + "  " + PositionFromCoord (file, rank, pieceDepth));
+					}
+					squarePieceRenderers[file, rank].transform.position = PositionFromCoord(file, rank, pieceDepth);
+					squareRenderers[file, rank].transform.position = PositionFromCoord(file, rank, 0);
+					if(squarePiece3DRenderers[file, rank] != null)
+					{
+						squarePiece3DRenderers[file, rank].transform.position = PositionFromCoord(file, rank, piece3DDepth);
+					}
+				}
+			}
+
+			if (!lastMadeMove.IsInvalid)
+			{
+				HighlightMove(lastMadeMove);
+			}
 		}
 
 		public void HighlightLegalMoves (Board board, Coord fromSquare) {
@@ -40,11 +102,21 @@ namespace Chess.Game {
 
 		public void DragPiece (Coord pieceCoord, Vector2 mousePos) {
 			squarePieceRenderers[pieceCoord.fileIndex, pieceCoord.rankIndex].transform.position = new Vector3 (mousePos.x, mousePos.y, pieceDragDepth);
+			if(squarePiece3DRenderers[pieceCoord.fileIndex, pieceCoord.rankIndex] != null)
+			{
+				squarePiece3DRenderers[pieceCoord.fileIndex, pieceCoord.rankIndex].transform.position = new Vector3(mousePos.x, mousePos.y, piece3DDragDepth);
+			}
 		}
 
 		public void ResetPiecePosition (Coord pieceCoord) {
 			Vector3 pos = PositionFromCoord (pieceCoord.fileIndex, pieceCoord.rankIndex, pieceDepth);
+			Vector3 pos3D = PositionFromCoord(pieceCoord.fileIndex, pieceCoord.rankIndex, piece3DDepth);
 			squarePieceRenderers[pieceCoord.fileIndex, pieceCoord.rankIndex].transform.position = pos;
+			if(squarePiece3DRenderers[pieceCoord.fileIndex, pieceCoord.rankIndex] != null)
+			{
+				squarePiece3DRenderers[pieceCoord.fileIndex, pieceCoord.rankIndex].transform.position = pos3D;
+				
+			}
 		}
 
 		public void SelectSquare (Coord coord) {
@@ -75,6 +147,20 @@ namespace Chess.Game {
 					int piece = board.Square[BoardRepresentation.IndexFromCoord (coord.fileIndex, coord.rankIndex)];
 					squarePieceRenderers[file, rank].sprite = pieceTheme.GetPieceSprite (piece);
 					squarePieceRenderers[file, rank].transform.position = PositionFromCoord (file, rank, pieceDepth);
+
+					GameObject piece3DPrefab = piece3DTheme.GetPiecePrefab(piece);
+					GameObject piece3D = null;
+					if(piece3DPrefab != null)
+					{
+						piece3D = Instantiate(
+							piece3DPrefab, squareRenderers[file, rank].transform.position, Quaternion.identity);
+						piece3D.transform.parent = squareRenderers[file, rank].transform;
+					}
+					if (squarePiece3DRenderers[file, rank] != null)
+					{
+						Destroy(squarePiece3DRenderers[file, rank]);
+					}
+					squarePiece3DRenderers[file, rank] = piece3D;
 				}
 			}
 
@@ -96,6 +182,7 @@ namespace Chess.Game {
 			Coord startCoord = BoardRepresentation.CoordFromIndex (move.StartSquare);
 			Coord targetCoord = BoardRepresentation.CoordFromIndex (move.TargetSquare);
 			Transform pieceT = squarePieceRenderers[startCoord.fileIndex, startCoord.rankIndex].transform;
+			Transform piece3DT = squarePiece3DRenderers[startCoord.fileIndex, startCoord.rankIndex].transform;
 			Vector3 startPos = PositionFromCoord (startCoord);
 			Vector3 targetPos = PositionFromCoord (targetCoord);
 			SetSquareColour (BoardRepresentation.CoordFromIndex (move.StartSquare), boardTheme.lightSquares.moveFromHighlight, boardTheme.darkSquares.moveFromHighlight);
@@ -104,62 +191,18 @@ namespace Chess.Game {
 				yield return null;
 				t += Time.deltaTime * 1 / moveAnimDuration;
 				pieceT.position = Vector3.Lerp (startPos, targetPos, t);
+				piece3DT.position = Vector3.Lerp(startPos, targetPos, t);
 			}
 			UpdatePosition (board);
 			ResetSquareColours ();
 			pieceT.position = startPos;
+			piece3DT.position = startPos;
+
 		}
 
 		void HighlightMove (Move move) {
 			SetSquareColour (BoardRepresentation.CoordFromIndex (move.StartSquare), boardTheme.lightSquares.moveFromHighlight, boardTheme.darkSquares.moveFromHighlight);
 			SetSquareColour (BoardRepresentation.CoordFromIndex (move.TargetSquare), boardTheme.lightSquares.moveToHighlight, boardTheme.darkSquares.moveToHighlight);
-		}
-
-		void CreateBoardUI () {
-
-			Shader squareShader = Shader.Find ("Unlit/Color");
-			squareRenderers = new MeshRenderer[8, 8];
-			squarePieceRenderers = new SpriteRenderer[8, 8];
-
-			for (int rank = 0; rank < 8; rank++) {
-				for (int file = 0; file < 8; file++) {
-					// Create square
-					Transform square = GameObject.CreatePrimitive (PrimitiveType.Quad).transform;
-					square.parent = transform;
-					square.name = BoardRepresentation.SquareNameFromCoordinate (file, rank);
-					square.position = PositionFromCoord (file, rank, 0);
-					Material squareMaterial = new Material (squareShader);
-
-					squareRenderers[file, rank] = square.gameObject.GetComponent<MeshRenderer> ();
-					squareRenderers[file, rank].material = squareMaterial;
-
-					// Create piece sprite renderer for current square
-					SpriteRenderer pieceRenderer = new GameObject ("Piece").AddComponent<SpriteRenderer> ();
-					pieceRenderer.transform.parent = square;
-					pieceRenderer.transform.position = PositionFromCoord (file, rank, pieceDepth);
-					pieceRenderer.transform.localScale = Vector3.one * 100 / (2000 / 6f);
-					squarePieceRenderers[file, rank] = pieceRenderer;
-				}
-			}
-
-			ResetSquareColours ();
-		}
-
-		void ResetSquarePositions () {
-			for (int rank = 0; rank < 8; rank++) {
-				for (int file = 0; file < 8; file++) {
-					if (file == 0 && rank == 0) {
-						//Debug.Log (squarePieceRenderers[file, rank].gameObject.name + "  " + PositionFromCoord (file, rank, pieceDepth));
-					}
-					//squarePieceRenderers[file, rank].transform.position = PositionFromCoord (file, rank, pieceDepth);
-					squareRenderers[file, rank].transform.position = PositionFromCoord (file, rank, 0);
-					squarePieceRenderers[file, rank].transform.position = PositionFromCoord (file, rank, pieceDepth);
-				}
-			}
-
-			if (!lastMadeMove.IsInvalid) {
-				HighlightMove (lastMadeMove);
-			}
 		}
 
 		public void SetPerspective (bool whitePOV) {
