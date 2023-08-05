@@ -157,6 +157,7 @@ namespace Chess.Game {
 							piece3DPrefab, squarePiece3DRenderers[file, rank].position, squarePiece3DRenderers[file,rank].rotation);
 						piece3D.transform.parent = squarePiece3DRenderers[file, rank];
 					}
+					squarePiece3DRenderers[file, rank].position = PositionFromCoord(file, rank, piece3DDepth);
 				}
 			}
 
