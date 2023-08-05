@@ -30,7 +30,7 @@ namespace Chess.Game
 					{
 						Debug.Log(piece);
 					}
-					return new GameObject("Piece3D");
+					return null;
 			}
 		}
 

@@ -179,20 +179,22 @@ namespace Chess.Game {
 			Coord targetCoord = BoardRepresentation.CoordFromIndex (move.TargetSquare);
 			Transform pieceT = squarePieceRenderers[startCoord.fileIndex, startCoord.rankIndex].transform;
 			Transform piece3DT = squarePiece3DRenderers[startCoord.fileIndex, startCoord.rankIndex].transform;
-			Vector3 startPos = PositionFromCoord (startCoord);
-			Vector3 targetPos = PositionFromCoord (targetCoord);
+			Vector3 startPos = PositionFromCoord (startCoord, pieceDepth);
+			Vector3 targetPos = PositionFromCoord (targetCoord, pieceDepth);
+			Vector3 start3DPos = PositionFromCoord(startCoord, piece3DDepth);
+			Vector3 target3DPos = PositionFromCoord(targetCoord, piece3DDepth);
 			SetSquareColour (BoardRepresentation.CoordFromIndex (move.StartSquare), boardTheme.lightSquares.moveFromHighlight, boardTheme.darkSquares.moveFromHighlight);
 
 			while (t <= 1) {
 				yield return null;
 				t += Time.deltaTime * 1 / moveAnimDuration;
 				pieceT.position = Vector3.Lerp (startPos, targetPos, t);
-				piece3DT.position = Vector3.Lerp(startPos, targetPos, t);
+				piece3DT.position = Vector3.Lerp(start3DPos, target3DPos, t);
 			}
 			UpdatePosition (board);
 			ResetSquareColours ();
 			pieceT.position = startPos;
-			piece3DT.position = startPos;
+			piece3DT.position = start3DPos;
 
 		}
 
