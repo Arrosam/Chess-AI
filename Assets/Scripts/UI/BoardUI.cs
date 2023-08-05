@@ -12,7 +12,7 @@ namespace Chess.Game {
 
 		MeshRenderer[, ] squareRenderers;
 		SpriteRenderer[, ] squarePieceRenderers;
-		GameObject[, ] squarePiece3DRenderers;
+		Transform[, ] squarePiece3DRenderers;
 		Move lastMadeMove;
 		MoveGenerator moveGenerator;
 
@@ -33,7 +33,7 @@ namespace Chess.Game {
 			Shader squareShader = Shader.Find("Unlit/Color");
 			squareRenderers = new MeshRenderer[8, 8];
 			squarePieceRenderers = new SpriteRenderer[8, 8];
-			squarePiece3DRenderers = new GameObject[8, 8];
+			squarePiece3DRenderers = new Transform[8, 8];
 			for (int rank = 0; rank < 8; rank++)
 			{
 				for (int file = 0; file < 8; file++)
@@ -54,6 +54,14 @@ namespace Chess.Game {
 					pieceRenderer.transform.position = PositionFromCoord(file, rank, pieceDepth);
 					pieceRenderer.transform.localScale = Vector3.one * 100 / (2000 / 6f);
 					squarePieceRenderers[file, rank] = pieceRenderer;
+
+					// Create piece 3D object container
+					Transform piece3DRenderer = new GameObject("Piece 3D").transform;
+					piece3DRenderer.position = PositionFromCoord(file, rank, piece3DDepth);
+					piece3DRenderer.parent = square;
+					piece3DRenderer.transform.localScale = Vector3.one * 100 / (2000 / 6f);
+					piece3DRenderer.rotation = Quaternion.Euler(-90, 0, 0);
+					squarePiece3DRenderers[file, rank] = piece3DRenderer;
 				}
 			}
 
@@ -72,10 +80,7 @@ namespace Chess.Game {
 					}
 					squarePieceRenderers[file, rank].transform.position = PositionFromCoord(file, rank, pieceDepth);
 					squareRenderers[file, rank].transform.position = PositionFromCoord(file, rank, 0);
-					if(squarePiece3DRenderers[file, rank] != null)
-					{
-						squarePiece3DRenderers[file, rank].transform.position = PositionFromCoord(file, rank, piece3DDepth);
-					}
+					squarePiece3DRenderers[file, rank].position = PositionFromCoord(file, rank, piece3DDepth);
 				}
 			}
 
@@ -102,21 +107,14 @@ namespace Chess.Game {
 
 		public void DragPiece (Coord pieceCoord, Vector2 mousePos) {
 			squarePieceRenderers[pieceCoord.fileIndex, pieceCoord.rankIndex].transform.position = new Vector3 (mousePos.x, mousePos.y, pieceDragDepth);
-			if(squarePiece3DRenderers[pieceCoord.fileIndex, pieceCoord.rankIndex] != null)
-			{
-				squarePiece3DRenderers[pieceCoord.fileIndex, pieceCoord.rankIndex].transform.position = new Vector3(mousePos.x, mousePos.y, piece3DDragDepth);
-			}
+			squarePiece3DRenderers[pieceCoord.fileIndex, pieceCoord.rankIndex].position = new Vector3(mousePos.x, mousePos.y, piece3DDragDepth);
 		}
 
 		public void ResetPiecePosition (Coord pieceCoord) {
 			Vector3 pos = PositionFromCoord (pieceCoord.fileIndex, pieceCoord.rankIndex, pieceDepth);
 			Vector3 pos3D = PositionFromCoord(pieceCoord.fileIndex, pieceCoord.rankIndex, piece3DDepth);
 			squarePieceRenderers[pieceCoord.fileIndex, pieceCoord.rankIndex].transform.position = pos;
-			if(squarePiece3DRenderers[pieceCoord.fileIndex, pieceCoord.rankIndex] != null)
-			{
-				squarePiece3DRenderers[pieceCoord.fileIndex, pieceCoord.rankIndex].transform.position = pos3D;
-				
-			}
+			squarePiece3DRenderers[pieceCoord.fileIndex, pieceCoord.rankIndex].transform.position = pos3D;
 		}
 
 		public void SelectSquare (Coord coord) {
@@ -148,19 +146,17 @@ namespace Chess.Game {
 					squarePieceRenderers[file, rank].sprite = pieceTheme.GetPieceSprite (piece);
 					squarePieceRenderers[file, rank].transform.position = PositionFromCoord (file, rank, pieceDepth);
 
+					foreach (Transform child in squarePiece3DRenderers[file, rank])
+					{
+						Destroy(child.gameObject);
+					}
 					GameObject piece3DPrefab = piece3DTheme.GetPiecePrefab(piece);
-					GameObject piece3D = null;
 					if(piece3DPrefab != null)
 					{
-						piece3D = Instantiate(
-							piece3DPrefab, squareRenderers[file, rank].transform.position, Quaternion.identity);
-						piece3D.transform.parent = squareRenderers[file, rank].transform;
+						GameObject piece3D = Instantiate(
+							piece3DPrefab, squarePiece3DRenderers[file, rank].position, squarePiece3DRenderers[file,rank].rotation);
+						piece3D.transform.parent = squarePiece3DRenderers[file, rank];
 					}
-					if (squarePiece3DRenderers[file, rank] != null)
-					{
-						Destroy(squarePiece3DRenderers[file, rank]);
-					}
-					squarePiece3DRenderers[file, rank] = piece3D;
 				}
 			}
 
