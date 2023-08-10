@@ -22,8 +22,6 @@ namespace Chess.Game {
 		public Color[] colors;
 
 		public bool useClocks;
-		public Clock whiteClock;
-		public Clock blackClock;
 		public TMPro.TMP_Text aiDiagnosticsUI;
 		public TMPro.TMP_Text resultUI;
 
@@ -41,11 +39,6 @@ namespace Chess.Game {
 		void Start () {
 			Application.targetFrameRate = 60;
 
-			if (useClocks) {
-				whiteClock.isTurnToMove = false;
-				blackClock.isTurnToMove = false;
-			}
-
 			boardUI = FindObjectOfType<BoardUI> ();
 			gameMoves = new List<Move> ();
 			board = new Board ();
@@ -62,11 +55,6 @@ namespace Chess.Game {
 				LogAIDiagnostics ();
 
 				playerToMove.Update ();
-
-				if (useClocks) {
-					whiteClock.isTurnToMove = board.WhiteToMove;
-					blackClock.isTurnToMove = !board.WhiteToMove;
-				}
 			}
 
 		}
