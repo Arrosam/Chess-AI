@@ -35,12 +35,11 @@ namespace Chess.Game {
 		List<Move> gameMoves;
 		BoardUI boardUI;
 
-		public ulong zobristDebug;
 		public Board board { get; private set; }
 		Board searchBoard; // Duplicate version of board used for ai search
 
 		void Start () {
-			//Application.targetFrameRate = 60;
+			Application.targetFrameRate = 60;
 
 			if (useClocks) {
 				whiteClock.isTurnToMove = false;
@@ -58,7 +57,6 @@ namespace Chess.Game {
 		}
 
 		void Update () {
-			zobristDebug = board.ZobristKey;
 
 			if (gameResult == Result.Playing) {
 				LogAIDiagnostics ();
@@ -69,10 +67,6 @@ namespace Chess.Game {
 					whiteClock.isTurnToMove = board.WhiteToMove;
 					blackClock.isTurnToMove = !board.WhiteToMove;
 				}
-			}
-
-			if (Input.GetKeyDown (KeyCode.E)) {
-				ExportGame ();
 			}
 
 		}
@@ -147,19 +141,6 @@ namespace Chess.Game {
 			text += $"\n<color=#{ColorUtility.ToHtmlStringRGB(colors[2])}>Move: {d.moveVal}";
 
 			aiDiagnosticsUI.text = text;
-		}
-
-		public void ExportGame () {
-			string pgn = PGNCreator.CreatePGN (gameMoves.ToArray ());
-			string baseUrl = "https://www.lichess.org/paste?pgn=";
-			string escapedPGN = UnityEngine.Networking.UnityWebRequest.EscapeURL (pgn);
-			string url = baseUrl + escapedPGN;
-
-			Application.OpenURL (url);
-			TextEditor t = new TextEditor ();
-			t.text = pgn;
-			t.SelectAll ();
-			t.Copy ();
 		}
 
 		public void QuitGame () {

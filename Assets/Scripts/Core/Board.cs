@@ -9,6 +9,7 @@
 		// Stores piece code for each square on the board.
 		// Piece code is defined as piecetype | colour code
 		public int[] Square;
+		public Status[] StatusSquare;
 
 		public bool WhiteToMove;
 		public int ColourToMove;
@@ -28,7 +29,7 @@
 		public ulong ZobristKey;
 		/// List of zobrist keys 
 		public Stack<ulong> RepetitionPositionHistory;
-
+		
 		public int[] KingSquare; // index of square of white and black king
 
 		public PieceList[] rooks;

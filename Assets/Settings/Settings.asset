@@ -13,21 +13,21 @@ MonoBehaviour:
   m_Name: Settings
   m_EditorClassIdentifier: 
   depth: 3
-  useIterativeDeepening: 1
+  useIterativeDeepening: 0
   useTranspositionTable: 1
   useThreading: 1
   useFixedDepthSearch: 0
   searchTimeMillis: 1000
   endlessSearchMode: 0
-  clearTTEachMove: 0
-  useBook: 1
+  clearTTEachMove: 1
+  useBook: 0
   book: {fileID: 4900000, guid: 7473c7aa9594747efb1706cc9c268ef3, type: 3}
   maxBookPly: 10
   promotionsToSearch: 2
   diagnostics:
-    lastCompletedDepth: 1
-    moveVal: Qxg3#
-    move: a3-g3
-    eval: 99999
+    lastCompletedDepth: 0
+    moveVal: 
+    move: 
+    eval: 0
     isBook: 0
-    numPositionsEvaluated: 0
+    numPositionsEvaluated: 1845
