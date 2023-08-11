@@ -19,12 +19,10 @@
 		// Bits 0-3 store white and black kingside/queenside castling legality
 		// Bits 4-7 store file of ep square (starting at 1, so 0 = no ep square)
 		// Bits 8-13 captured piece
-		// Bits 14-... fifty mover counter
 		Stack<uint> gameStateHistory;
 		public uint currentGameState;
 
 		public int plyCount; // Total plies played in game
-		public int fiftyMoveCounter; // Num ply since last pawn move or capture
 
 		public ulong ZobristKey;
 		/// List of zobrist keys 
@@ -176,7 +174,6 @@
 				ZobristKey ^= Zobrist.castlingRights[newCastleState]; // add new castling rights state
 			}
 			currentGameState |= newCastleState;
-			currentGameState |= (uint) fiftyMoveCounter << 14;
 			gameStateHistory.Push (currentGameState);
 
 			// Change side to move
@@ -185,12 +182,10 @@
 			OpponentColour = (WhiteToMove) ? Piece.Black : Piece.White;
 			ColourToMoveIndex = 1 - ColourToMoveIndex;
 			plyCount++;
-			fiftyMoveCounter++;
 
 			if (!inSearch) {
 				if (movePieceType == Piece.Pawn || capturedPieceType != Piece.None) {
 					RepetitionPositionHistory.Clear ();
-					fiftyMoveCounter = 0;
 				} else {
 					RepetitionPositionHistory.Push (ZobristKey);
 				}
@@ -289,7 +284,6 @@
 			gameStateHistory.Pop (); // removes current state from history
 			currentGameState = gameStateHistory.Peek (); // sets current state to previous state in history
 
-			fiftyMoveCounter = (int) (currentGameState & 4294950912) >> 14;
 			int newEnPassantFile = (int) (currentGameState >> 4) & 15;
 			if (newEnPassantFile != 0)
 				ZobristKey ^= Zobrist.enPassantFile[newEnPassantFile];
@@ -371,7 +365,6 @@
 			ZobristKey = 0;
 			RepetitionPositionHistory = new Stack<ulong> ();
 			plyCount = 0;
-			fiftyMoveCounter = 0;
 
 			knights = new PieceList[] { new PieceList (10), new PieceList (10) };
 			pawns = new PieceList[] { new PieceList (8), new PieceList (8) };

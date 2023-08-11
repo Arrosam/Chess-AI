@@ -46,7 +46,7 @@
         NotifyPlayerToMove()
         PrintGameResult()
         GetGameState()
-        //()
+        //检查当前()
         CreatePlayer(ref Player, PlayerType)
         //输入指针，生成对应的Player存储在输入的指针处()
     }

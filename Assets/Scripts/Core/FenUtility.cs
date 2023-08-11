@@ -132,10 +132,6 @@
 				fen += fileName + epRank;
 			}
 
-			// 50 move counter
-			fen += ' ';
-			fen += board.fiftyMoveCounter;
-
 			// Full-move count (should be one at start, and increase after each move by black)
 			fen += ' ';
 			fen += (board.plyCount / 2) + 1;

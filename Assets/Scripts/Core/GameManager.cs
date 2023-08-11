@@ -6,7 +6,7 @@ using UnityEngine;
 namespace Chess.Game {
 	public class GameManager : MonoBehaviour {
 
-		public enum Result { Playing, WhiteIsMated, BlackIsMated, Stalemate, InsufficientMaterial }
+		public enum Result { Playing, WhiteIsMated, BlackIsMated, Stalemate, Repetition, InsufficientMaterial }
 
 		public event System.Action OnPositionLoaded;
 		public event System.Action<Move> OnMoveMade;
@@ -158,6 +158,9 @@ namespace Chess.Game {
 				resultUI.text = "";
 			} else if (result == Result.WhiteIsMated || result == Result.BlackIsMated) {
 				resultUI.text = "Checkmate!";
+			} else if (result == Result.Repetition) {
+				resultUI.text = "Draw";
+				resultUI.text += subtitleSettings + "\n(3-fold repetition)";
 			} else if (result == Result.Stalemate) {
 				resultUI.text = "Draw";
 				resultUI.text += subtitleSettings + "\n(Stalemate)";
@@ -177,6 +180,12 @@ namespace Chess.Game {
 					return (board.WhiteToMove) ? Result.WhiteIsMated : Result.BlackIsMated;
 				}
 				return Result.Stalemate;
+			}
+            
+			// Threefold repetition
+			int repCount = board.RepetitionPositionHistory.Count ((x => x == board.ZobristKey));
+			if (repCount == 3) {
+				return Result.Repetition;
 			}
 
 			// Look for insufficient material (not all cases implemented yet)
