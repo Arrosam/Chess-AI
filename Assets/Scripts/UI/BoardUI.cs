@@ -204,12 +204,6 @@ namespace Chess.Game {
 			SetSquareColour (BoardRepresentation.CoordFromIndex (move.TargetSquare), boardTheme.lightSquares.moveToHighlight, boardTheme.darkSquares.moveToHighlight);
 		}
 
-		public void SetPerspective (bool whitePOV) {
-			whiteIsBottom = whitePOV;
-			ResetSquarePositions ();
-
-		}
-
 		public void ResetSquareColours (bool highlight = true) {
 			for (int rank = 0; rank < 8; rank++) {
 				for (int file = 0; file < 8; file++) {

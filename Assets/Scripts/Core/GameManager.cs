@@ -8,8 +8,8 @@ namespace Chess.Game {
 
 		public enum Result { Playing, WhiteIsMated, BlackIsMated, Stalemate, Repetition, FiftyMoveRule, InsufficientMaterial }
 
-		public event System.Action onPositionLoaded;
-		public event System.Action<Move> onMoveMade;
+		public event System.Action OnPositionLoaded;
+		public event System.Action<Move> OnMoveMade;
 
 		public enum PlayerType { Human, AI }
 
@@ -50,13 +50,44 @@ namespace Chess.Game {
 		}
 
 		void Update () {
-
 			if (gameResult == Result.Playing) {
 				LogAIDiagnostics ();
-
 				playerToMove.Update ();
 			}
 
+		}
+
+		void LogAIDiagnostics()
+		{
+			string text = "";
+			var d = aiSettings.diagnostics;
+			//text += "AI Diagnostics";
+			text += $"<color=#{ColorUtility.ToHtmlStringRGB(colors[3])}>Version 1.0\n";
+			text += $"<color=#{ColorUtility.ToHtmlStringRGB(colors[0])}>Depth Searched: {d.lastCompletedDepth}";
+			//text += $"\nPositions evaluated: {d.numPositionsEvaluated}";
+
+			string evalString = "";
+			if (d.isBook)
+			{
+				evalString = "Book";
+			}
+			else
+			{
+				float displayEval = d.eval / 100f;
+				if (playerToMove is AIPlayer && !board.WhiteToMove)
+				{
+					displayEval = -displayEval;
+				}
+				evalString = ($"{displayEval:00.00}").Replace(",", ".");
+				if (Search.IsMateScore(d.eval))
+				{
+					evalString = $"mate in {Search.NumPlyToMateFromScore(d.eval)} ply";
+				}
+			}
+			text += $"\n<color=#{ColorUtility.ToHtmlStringRGB(colors[1])}>Eval: {evalString}";
+			text += $"\n<color=#{ColorUtility.ToHtmlStringRGB(colors[2])}>Move: {d.moveVal}";
+
+			aiDiagnosticsUI.text = text;
 		}
 
 		void OnMoveChosen (Move move) {
@@ -65,19 +96,17 @@ namespace Chess.Game {
 			searchBoard.MakeMove (move);
 
 			gameMoves.Add (move);
-			onMoveMade?.Invoke (move);
+			OnMoveMade?.Invoke (move);
 			boardUI.OnMoveMade (board, move, animateMove);
 
 			NotifyPlayerToMove ();
 		}
 
 		public void NewGame (bool humanPlaysWhite) {
-			boardUI.SetPerspective (humanPlaysWhite);
 			NewGame ((humanPlaysWhite) ? PlayerType.Human : PlayerType.AI, (humanPlaysWhite) ? PlayerType.AI : PlayerType.Human);
 		}
 
 		public void NewComputerVersusComputerGame () {
-			boardUI.SetPerspective (true);
 			NewGame (PlayerType.AI, PlayerType.AI);
 		}
 
@@ -90,7 +119,7 @@ namespace Chess.Game {
 				board.LoadStartPosition ();
 				searchBoard.LoadStartPosition ();
 			}
-			onPositionLoaded?.Invoke ();
+			OnPositionLoaded?.Invoke ();
 			boardUI.UpdatePosition (board);
 			boardUI.ResetSquareColours ();
 
@@ -102,33 +131,6 @@ namespace Chess.Game {
 
 			NotifyPlayerToMove ();
 
-		}
-
-		void LogAIDiagnostics () {
-			string text = "";
-			var d = aiSettings.diagnostics;
-			//text += "AI Diagnostics";
-			text += $"<color=#{ColorUtility.ToHtmlStringRGB(colors[3])}>Version 1.0\n";
-			text += $"<color=#{ColorUtility.ToHtmlStringRGB(colors[0])}>Depth Searched: {d.lastCompletedDepth}";
-			//text += $"\nPositions evaluated: {d.numPositionsEvaluated}";
-
-			string evalString = "";
-			if (d.isBook) {
-				evalString = "Book";
-			} else {
-				float displayEval = d.eval / 100f;
-				if (playerToMove is AIPlayer && !board.WhiteToMove) {
-					displayEval = -displayEval;
-				}
-				evalString = ($"{displayEval:00.00}").Replace (",", ".");
-				if (Search.IsMateScore (d.eval)) {
-					evalString = $"mate in {Search.NumPlyToMateFromScore(d.eval)} ply";
-				}
-			}
-			text += $"\n<color=#{ColorUtility.ToHtmlStringRGB(colors[1])}>Eval: {evalString}";
-			text += $"\n<color=#{ColorUtility.ToHtmlStringRGB(colors[2])}>Move: {d.moveVal}";
-
-			aiDiagnosticsUI.text = text;
 		}
 
 		public void QuitGame () {
