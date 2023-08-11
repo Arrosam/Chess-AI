@@ -6,7 +6,7 @@ using UnityEngine;
 namespace Chess.Game {
 	public class GameManager : MonoBehaviour {
 
-		public enum Result { Playing, WhiteIsMated, BlackIsMated, Stalemate, Repetition, FiftyMoveRule, InsufficientMaterial }
+		public enum Result { Playing, WhiteIsMated, BlackIsMated, Stalemate, InsufficientMaterial }
 
 		public event System.Action OnPositionLoaded;
 		public event System.Action<Move> OnMoveMade;
@@ -102,10 +102,6 @@ namespace Chess.Game {
 			NotifyPlayerToMove ();
 		}
 
-		public void NewGame (bool humanPlaysWhite) {
-			NewGame ((humanPlaysWhite) ? PlayerType.Human : PlayerType.AI, (humanPlaysWhite) ? PlayerType.AI : PlayerType.Human);
-		}
-
 		public void NewComputerVersusComputerGame () {
 			NewGame (PlayerType.AI, PlayerType.AI);
 		}
@@ -131,6 +127,10 @@ namespace Chess.Game {
 
 			NotifyPlayerToMove ();
 
+		}
+		
+		public void NewGame (bool humanPlaysWhite) {
+			NewGame ((humanPlaysWhite) ? PlayerType.Human : PlayerType.AI, (humanPlaysWhite) ? PlayerType.AI : PlayerType.Human);
 		}
 
 		public void QuitGame () {
@@ -158,12 +158,6 @@ namespace Chess.Game {
 				resultUI.text = "";
 			} else if (result == Result.WhiteIsMated || result == Result.BlackIsMated) {
 				resultUI.text = "Checkmate!";
-			} else if (result == Result.FiftyMoveRule) {
-				resultUI.text = "Draw";
-				resultUI.text += subtitleSettings + "\n(50 move rule)";
-			} else if (result == Result.Repetition) {
-				resultUI.text = "Draw";
-				resultUI.text += subtitleSettings + "\n(3-fold repetition)";
 			} else if (result == Result.Stalemate) {
 				resultUI.text = "Draw";
 				resultUI.text += subtitleSettings + "\n(Stalemate)";
@@ -183,17 +177,6 @@ namespace Chess.Game {
 					return (board.WhiteToMove) ? Result.WhiteIsMated : Result.BlackIsMated;
 				}
 				return Result.Stalemate;
-			}
-
-			// Fifty move rule
-			if (board.fiftyMoveCounter >= 100) {
-				return Result.FiftyMoveRule;
-			}
-
-			// Threefold repetition
-			int repCount = board.RepetitionPositionHistory.Count ((x => x == board.ZobristKey));
-			if (repCount == 3) {
-				return Result.Repetition;
 			}
 
 			// Look for insufficient material (not all cases implemented yet)

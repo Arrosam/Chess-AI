@@ -41,7 +41,13 @@
         NewGame()
         //新建游戏，控制棋盘方向。()
         NewCompoterVersusComputerGame()
-        
+        //调用NewGame，传入两个AI玩家()
+        QuitGame()
+        NotifyPlayerToMove()
+        PrintGameResult()
+        GetGameState()
         //()
+        CreatePlayer(ref Player, PlayerType)
+        //输入指针，生成对应的Player存储在输入的指针处()
     }
 ```
