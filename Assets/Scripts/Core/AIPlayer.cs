@@ -22,7 +22,7 @@
 			search = new Search (board, settings);
 			search.onSearchComplete += OnSearchComplete;
 			search.searchDiagnostics = new Search.SearchDiagnostics ();
-			book = BookCreator.LoadBookFromFile (settings.book);
+			book = BookReader.LoadBookFromFile (settings.book);
 		}
 
 		// Update running on Unity main thread. This is used to return the chosen move so as

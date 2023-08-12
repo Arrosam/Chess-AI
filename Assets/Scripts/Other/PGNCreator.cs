@@ -1,24 +1,6 @@
 ﻿namespace Chess {
 	public static class PGNCreator {
 
-		public static string CreatePGN (Move[] moves) {
-			string pgn = "";
-			Board board = new Board ();
-			board.LoadStartPosition ();
-
-			for (int plyCount = 0; plyCount < moves.Length; plyCount++) {
-				string moveString = NotationFromMove (board, moves[plyCount]);
-				board.MakeMove (moves[plyCount]);
-
-				if (plyCount % 2 == 0) {
-					pgn += ((plyCount / 2) + 1) + ". ";
-				}
-				pgn += moveString + " ";
-			}
-
-			return pgn;
-		}
-
 		public static string NotationFromMove (string currentFen, Move move) {
 			Board board = new Board ();
 			board.LoadPosition (currentFen);
