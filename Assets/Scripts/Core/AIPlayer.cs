@@ -35,8 +35,6 @@
 		}
 
 		public override void NotifyTurnToMove () {
-
-			search.searchDiagnostics.isBook = false;
 			moveFound = false;
 			if (settings.useThreading) {
 				StartThreadedSearch ();

@@ -17,9 +17,6 @@
 		public int searchTimeMillis = 1000;
 		public bool endlessSearchMode;
 		public bool clearTTEachMove;
-        
-		public TextAsset book;
-		public int maxBookPly = 10;
 		
 		public MoveGenerator.PromotionMode promotionsToSearch;
 

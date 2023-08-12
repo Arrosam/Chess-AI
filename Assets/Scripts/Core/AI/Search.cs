@@ -86,7 +86,6 @@
 						searchDiagnostics.lastCompletedDepth = searchDepth;
 						searchDiagnostics.move = bestMove.Name;
 						searchDiagnostics.eval = bestEval;
-						searchDiagnostics.moveVal = Chess.PGNCreator.NotationFromMove (FenUtility.CurrentFen (board), bestMove);
 
 						// Exit search if found a mate
 						if (IsMateScore (bestEval) && !settings.endlessSearchMode) {
@@ -283,7 +282,6 @@
 			public string moveVal;
 			public string move;
 			public int eval;
-			public bool isBook;
 			public int numPositionsEvaluated;
 		}
 

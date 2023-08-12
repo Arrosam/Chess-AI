@@ -67,22 +67,15 @@ namespace Chess.Game {
 			//text += $"\nPositions evaluated: {d.numPositionsEvaluated}";
 
 			string evalString = "";
-			if (d.isBook)
+			float displayEval = d.eval / 100f;
+			if (playerToMove is AIPlayer && !board.WhiteToMove)
 			{
-				evalString = "Book";
+				displayEval = -displayEval;
 			}
-			else
+			evalString = ($"{displayEval:00.00}").Replace(",", ".");
+			if (Search.IsMateScore(d.eval))
 			{
-				float displayEval = d.eval / 100f;
-				if (playerToMove is AIPlayer && !board.WhiteToMove)
-				{
-					displayEval = -displayEval;
-				}
-				evalString = ($"{displayEval:00.00}").Replace(",", ".");
-				if (Search.IsMateScore(d.eval))
-				{
-					evalString = $"mate in {Search.NumPlyToMateFromScore(d.eval)} ply";
-				}
+				evalString = $"mate in {Search.NumPlyToMateFromScore(d.eval)} ply";
 			}
 			text += $"\n<color=#{ColorUtility.ToHtmlStringRGB(colors[1])}>Eval: {evalString}";
 			text += $"\n<color=#{ColorUtility.ToHtmlStringRGB(colors[2])}>Move: {d.moveVal}";
