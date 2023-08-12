@@ -13,8 +13,6 @@
 		Board board;
 		CancellationTokenSource cancelSearchTimer;
 
-		Book book;
-
 		public AIPlayer (Board board, AISettings settings) {
 			this.settings = settings;
 			this.board = board;
@@ -22,7 +20,6 @@
 			search = new Search (board, settings);
 			search.onSearchComplete += OnSearchComplete;
 			search.searchDiagnostics = new Search.SearchDiagnostics ();
-			book = BookReader.LoadBookFromFile (settings.book);
 		}
 
 		// Update running on Unity main thread. This is used to return the chosen move so as
@@ -41,28 +38,12 @@
 
 			search.searchDiagnostics.isBook = false;
 			moveFound = false;
-
-			Move bookMove = Move.InvalidMove;
-			if (settings.useBook && board.plyCount <= settings.maxBookPly) {
-				if (book.HasPosition (board.ZobristKey)) {
-					bookMove = book.GetRandomBookMoveWeighted (board.ZobristKey);
-				}
-			}
-
-			if (bookMove.IsInvalid) {
-				if (settings.useThreading) {
-					StartThreadedSearch ();
-				} else {
-					StartSearch ();
-				}
+			if (settings.useThreading) {
+				StartThreadedSearch ();
 			} else {
-			
-				search.searchDiagnostics.isBook = true;
-				search.searchDiagnostics.moveVal = Chess.PGNCreator.NotationFromMove (FenUtility.CurrentFen(board), bookMove);
-				settings.diagnostics = search.searchDiagnostics;
-				Task.Delay (bookMoveDelayMillis).ContinueWith ((t) => PlayBookMove (bookMove));
-				
+				StartSearch ();
 			}
+			
 		}
 
 		void StartSearch () {

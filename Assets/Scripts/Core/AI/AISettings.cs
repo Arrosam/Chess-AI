@@ -17,8 +17,7 @@
 		public int searchTimeMillis = 1000;
 		public bool endlessSearchMode;
 		public bool clearTTEachMove;
-
-		public bool useBook;
+        
 		public TextAsset book;
 		public int maxBookPly = 10;
 		
