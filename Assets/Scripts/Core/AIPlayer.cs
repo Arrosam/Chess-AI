@@ -4,22 +4,17 @@
 
 	public class AIPlayer : Player {
 
-		const int bookMoveDelayMillis = 250;
-
 		Search search;
 		AISettings settings;
 		bool moveFound;
 		Move move;
-		Board board;
 		CancellationTokenSource cancelSearchTimer;
 
 		public AIPlayer (Board board, AISettings settings) {
 			this.settings = settings;
-			this.board = board;
 			settings.requestAbortSearch += TimeOutThreadedSearch;
 			search = new Search (board, settings);
 			search.onSearchComplete += OnSearchComplete;
-			search.searchDiagnostics = new Search.SearchDiagnostics ();
 		}
 
 		// Update running on Unity main thread. This is used to return the chosen move so as
@@ -29,8 +24,7 @@
 				moveFound = false;
 				ChoseMove (move);
 			}
-
-			settings.diagnostics = search.searchDiagnostics;
+            
 
 		}
 
@@ -66,11 +60,6 @@
 			if (cancelSearchTimer == null || !cancelSearchTimer.IsCancellationRequested) {
 				search.EndSearch ();
 			}
-		}
-
-		void PlayBookMove(Move bookMove) {
-			this.move = bookMove;
-			moveFound = true;
 		}
 
 		void OnSearchComplete (Move move) {

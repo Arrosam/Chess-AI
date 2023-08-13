@@ -30,7 +30,7 @@
 		Evaluation evaluation;
 
 		// Diagnostics
-		public SearchDiagnostics searchDiagnostics;
+
 		int numNodes;
 		int numQNodes;
 		int numCutoffs;
@@ -66,7 +66,6 @@
 			moveGenerator.promotionsToGenerate = settings.promotionsToSearch;
 			currentIterativeSearchDepth = 0;
 			abortSearch = false;
-			searchDiagnostics = new SearchDiagnostics ();
 
 			// Iterative deepening. This means doing a full search with a depth of 1, then with a depth of 2, and so on.
 			// This allows the search to be aborted at any time, while still yielding a useful result from the last search.
@@ -81,11 +80,6 @@
 						currentIterativeSearchDepth = searchDepth;
 						bestMove = bestMoveThisIteration;
 						bestEval = bestEvalThisIteration;
-
-						// Update diagnostics
-						searchDiagnostics.lastCompletedDepth = searchDepth;
-						searchDiagnostics.move = bestMove.Name;
-						searchDiagnostics.eval = bestEval;
 
 						// Exit search if found a mate
 						if (IsMateScore (bestEval) && !settings.endlessSearchMode) {
@@ -210,7 +204,6 @@
 			// This prevents situations where a player ony has bad captures available from being evaluated as bad,
 			// when the player might have good non-capture moves available.
 			int eval = evaluation.Evaluate (board);
-			searchDiagnostics.numPositionsEvaluated++;
 			if (eval >= beta) {
 				return beta;
 			}
@@ -275,15 +268,5 @@
 			numCutoffs = 0;
 			numTranspositions = 0;
 		}
-
-		[System.Serializable]
-		public class SearchDiagnostics {
-			public int lastCompletedDepth;
-			public string moveVal;
-			public string move;
-			public int eval;
-			public int numPositionsEvaluated;
-		}
-
 	}
 }

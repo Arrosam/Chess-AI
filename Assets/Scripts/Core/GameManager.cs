@@ -43,7 +43,6 @@ namespace Chess.Game {
 			gameMoves = new List<Move> ();
 			board = new Board ();
 			searchBoard = new Board ();
-			aiSettings.diagnostics = new Search.SearchDiagnostics ();
 
 			NewGame (whitePlayerType, blackPlayerType);
 
@@ -51,36 +50,9 @@ namespace Chess.Game {
 
 		void Update () {
 			if (gameResult == Result.Playing) {
-				LogAIDiagnostics ();
 				playerToMove.Update ();
 			}
 
-		}
-
-		void LogAIDiagnostics()
-		{
-			string text = "";
-			var d = aiSettings.diagnostics;
-			//text += "AI Diagnostics";
-			text += $"<color=#{ColorUtility.ToHtmlStringRGB(colors[3])}>Version 1.0\n";
-			text += $"<color=#{ColorUtility.ToHtmlStringRGB(colors[0])}>Depth Searched: {d.lastCompletedDepth}";
-			//text += $"\nPositions evaluated: {d.numPositionsEvaluated}";
-
-			string evalString = "";
-			float displayEval = d.eval / 100f;
-			if (playerToMove is AIPlayer && !board.WhiteToMove)
-			{
-				displayEval = -displayEval;
-			}
-			evalString = ($"{displayEval:00.00}").Replace(",", ".");
-			if (Search.IsMateScore(d.eval))
-			{
-				evalString = $"mate in {Search.NumPlyToMateFromScore(d.eval)} ply";
-			}
-			text += $"\n<color=#{ColorUtility.ToHtmlStringRGB(colors[1])}>Eval: {evalString}";
-			text += $"\n<color=#{ColorUtility.ToHtmlStringRGB(colors[2])}>Move: {d.moveVal}";
-
-			aiDiagnosticsUI.text = text;
 		}
 
 		void OnMoveChosen (Move move) {

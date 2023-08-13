@@ -19,8 +19,7 @@
 		public bool clearTTEachMove;
 		
 		public MoveGenerator.PromotionMode promotionsToSearch;
-
-		public Search.SearchDiagnostics diagnostics;
+        
 
 		public void RequestAbortSearch () {
 			requestAbortSearch?.Invoke ();
