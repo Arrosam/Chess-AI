@@ -6,6 +6,9 @@
 			['k'] = Piece.King, ['p'] = Piece.Pawn, ['n'] = Piece.Knight, ['b'] = Piece.Bishop, ['r'] = Piece.Rook, ['q'] = Piece.Queen
 		};
 
+		// r = rook, n = knight look up for more info
+		// numbers representing empty grids
+		// lower case is black chess, Upper case is white chess
 		public const string startFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
 		// Load position from fen string
