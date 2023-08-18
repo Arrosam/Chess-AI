@@ -11,7 +11,7 @@ namespace Chess.Game {
 		public event System.Action OnPositionLoaded;
 		public event System.Action<Move> OnMoveMade;
 
-		public enum PlayerType { Human, AI }
+		public enum PlayerType { Human, AI, Hybrid }
 
 		public bool loadCustomPosition;
 		public string customPosition = "1rbq1r1k/2pp2pp/p1n3p1/2b1p3/R3P3/1BP2N2/1P3PPP/1NBQ1RK1 w - - 0 1";
@@ -67,11 +67,7 @@ namespace Chess.Game {
 			NotifyPlayerToMove ();
 		}
 
-		public void NewComputerVersusComputerGame () {
-			NewGame (PlayerType.AI, PlayerType.AI);
-		}
-
-		void NewGame (PlayerType whitePlayerType, PlayerType blackPlayerType) {
+		public void NewGame (PlayerType whitePlayerType, PlayerType blackPlayerType) {
 			gameMoves.Clear ();
 			if (loadCustomPosition) {
 				board.LoadPosition (customPosition);
@@ -92,10 +88,6 @@ namespace Chess.Game {
 
 			NotifyPlayerToMove ();
 
-		}
-		
-		public void NewGame (bool humanPlaysWhite) {
-			NewGame ((humanPlaysWhite) ? PlayerType.Human : PlayerType.AI, (humanPlaysWhite) ? PlayerType.AI : PlayerType.Human);
 		}
 
 		public void QuitGame () {
