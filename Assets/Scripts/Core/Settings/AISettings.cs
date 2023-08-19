@@ -15,8 +15,6 @@ namespace Chess {
         
 		public bool useFixedDepthSearch;
 		public int searchTimeMillis = 1000;
-		public bool endlessSearchMode;
-		public bool clearTTEachMove;
 		
 		public MoveGenerator.PromotionMode promotionsToSearch;
 	}

@@ -1,7 +1,6 @@
 ﻿namespace Chess {
 	using System.Collections.Generic;
 	using System.Threading;
-	using UnityEngine;
 	using static System.Math;
 
 	public class Search {
@@ -20,7 +19,6 @@
 		int bestEvalThisIteration;
 		Move bestMove;
 		int bestEval;
-		int currentIterativeSearchDepth;
 		bool abortSearch;
 
 		Move invalidMove;
@@ -28,14 +26,6 @@
 		AISettings settings;
 		Board board;
 		Evaluation evaluation;
-
-		// Diagnostics
-
-		int numNodes;
-		int numQNodes;
-		int numCutoffs;
-		int numTranspositions;
-		System.Diagnostics.Stopwatch searchStopwatch;
 
 		public Search (Board board, AISettings settings) {
 			this.board = board;
@@ -50,21 +40,15 @@
 		}
 
 		public void StartSearch () {
-			InitDebugInfo ();
-
+			
 			// Initialize search settings
 			bestEvalThisIteration = bestEval = 0;
 			bestMoveThisIteration = bestMove = Move.InvalidMove;
 			tt.enabled = settings.useTranspositionTable;
-
-			// Clearing the transposition table before each search seems to help
-			// This makes no sense to me, I presume there is a bug somewhere but haven't been able to track it down yet
-			if (settings.clearTTEachMove) {
-				tt.Clear ();
-			}
+			
+            tt.Clear ();
 
 			moveGenerator.promotionsToGenerate = settings.promotionsToSearch;
-			currentIterativeSearchDepth = 0;
 			abortSearch = false;
 
 			// Iterative deepening. This means doing a full search with a depth of 1, then with a depth of 2, and so on.
@@ -77,12 +61,11 @@
 					if (abortSearch) {
 						break;
 					} else {
-						currentIterativeSearchDepth = searchDepth;
 						bestMove = bestMoveThisIteration;
 						bestEval = bestEvalThisIteration;
 
 						// Exit search if found a mate
-						if (IsMateScore (bestEval) && !settings.endlessSearchMode) {
+						if (IsMateScore (bestEval)) {
 							break;
 						}
 					}
@@ -132,7 +115,6 @@
 			// to the search we're doing now,we can just use the recorded evaluation.
 			int ttVal = tt.LookupEvaluation (depth, plyFromRoot, alpha, beta);
 			if (ttVal != TranspositionTable.lookupFailed) {
-				numTranspositions++;
 				if (plyFromRoot == 0) {
 					bestMoveThisIteration = tt.GetStoredMove ();
 					bestEvalThisIteration = tt.entries[tt.Index].value;
@@ -165,13 +147,11 @@
 				board.MakeMove (moves[i], inSearch : true);
 				int eval = -SearchMoves (depth - 1, plyFromRoot + 1, -beta, -alpha);
 				board.UnmakeMove (moves[i], inSearch : true);
-				numNodes++;
 
 				// Move was *too* good, so opponent won't allow this position to be reached
 				// (by choosing a different move earlier on). Skip remaining moves.
 				if (eval >= beta) {
 					tt.StoreEvaluation (depth, plyFromRoot, beta, TranspositionTable.LowerBound, moves[i]);
-					numCutoffs++;
 					return beta;
 				}
 
@@ -213,10 +193,8 @@
 				board.MakeMove (moves[i], true);
 				eval = -QuiescenceSearch (-beta, -alpha);
 				board.UnmakeMove (moves[i], true);
-				numQNodes++;
 
 				if (eval >= beta) {
-					numCutoffs++;
 					return beta;
 				}
 				if (eval > alpha) {
@@ -230,39 +208,6 @@
 		public static bool IsMateScore (int score) {
 			const int maxMateDepth = 1000;
 			return System.Math.Abs (score) > immediateMateScore - maxMateDepth;
-		}
-
-		public static int NumPlyToMateFromScore (int score) {
-			return immediateMateScore - System.Math.Abs (score);
-
-		}
-
-		void LogDebugInfo () {
-			AnnounceMate ();
-			Debug.Log ($"Best move: {bestMoveThisIteration.Name} Eval: {bestEvalThisIteration} Search time: {searchStopwatch.ElapsedMilliseconds} ms.");
-			Debug.Log ($"Num nodes: {numNodes} num Qnodes: {numQNodes} num cutoffs: {numCutoffs} num TThits {numTranspositions}");
-		}
-
-		void AnnounceMate () {
-
-			if (IsMateScore (bestEvalThisIteration)) {
-				int numPlyToMate = NumPlyToMateFromScore (bestEvalThisIteration);
-				//int numPlyToMateAfterThisMove = numPlyToMate - 1;
-
-				int numMovesToMate = (int) Ceiling (numPlyToMate / 2f);
-
-				string sideWithMate = (bestEvalThisIteration * ((board.WhiteToMove) ? 1 : -1) < 0) ? "Black" : "White";
-
-				Debug.Log ($"{sideWithMate} can mate in {numMovesToMate} move{((numMovesToMate>1)?"s":"")}");
-			}
-		}
-
-		void InitDebugInfo () {
-			searchStopwatch = System.Diagnostics.Stopwatch.StartNew ();
-			numNodes = 0;
-			numQNodes = 0;
-			numCutoffs = 0;
-			numTranspositions = 0;
 		}
 	}
 }

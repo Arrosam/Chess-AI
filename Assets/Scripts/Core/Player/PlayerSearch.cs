@@ -22,14 +22,10 @@ namespace Chess.Game
         {
             _moveFound = false;
             Task.Factory.StartNew(() => _search.StartSearch(), TaskCreationOptions.LongRunning);
-
-            if (!_settings.endlessSearchMode)
-            {
-                _cancelSearchTimer = new CancellationTokenSource();
-                Task.Delay(_settings.searchTimeMillis, _cancelSearchTimer.Token)
-                    .ContinueWith((t) => TimeOutThreadedSearch());
-            }
-
+            
+            _cancelSearchTimer = new CancellationTokenSource();
+            Task.Delay(_settings.searchTimeMillis, _cancelSearchTimer.Token)
+                .ContinueWith((t) => TimeOutThreadedSearch());
         }
 
         // Note: called outside of Unity main thread
