@@ -25,68 +25,68 @@ namespace Chess.Game {
 		public TMPro.TMP_Text aiDiagnosticsUI;
 		public TMPro.TMP_Text resultUI;
 
-		Result gameResult;
+		Result _gameResult;
 
-		Player whitePlayer;
-		Player blackPlayer;
-		Player playerToMove;
-		List<Move> gameMoves;
-		BoardUI boardUI;
+		Player _whitePlayer;
+		Player _blackPlayer;
+		Player _playerToMove;
+		List<Move> _gameMoves;
+		BoardUI _boardUI;
 
-		public Board board { get; private set; }
-		Board searchBoard; // Duplicate version of board used for ai search
+		public Board Board { get; private set; }
+		Board _searchBoard; // Duplicate version of board used for ai search
 
 		void Start () {
 			Application.targetFrameRate = 60;
 
-			boardUI = FindObjectOfType<BoardUI> ();
-			gameMoves = new List<Move> ();
-			board = new Board ();
-			searchBoard = new Board ();
+			_boardUI = FindObjectOfType<BoardUI> ();
+			_gameMoves = new List<Move> ();
+			Board = new Board ();
+			_searchBoard = new Board ();
 
 			NewGame (whitePlayerType, blackPlayerType);
 
 		}
 
 		void Update () {
-			if (gameResult == Result.Playing) {
-				playerToMove.Update ();
+			if (_gameResult == Result.Playing) {
+				_playerToMove.Update ();
 			}
 
 		}
 
 		void OnMoveChosen (Move move) {
-			bool animateMove = playerToMove is AIPlayer;
-			board.MakeMove (move);
-			searchBoard.MakeMove (move);
+			bool animateMove = _playerToMove is AIPlayer;
+			Board.MakeMove (move);
+			_searchBoard.MakeMove (move);
 
-			gameMoves.Add (move);
+			_gameMoves.Add (move);
 			OnMoveMade?.Invoke (move);
-			boardUI.OnMoveMade (board, move, animateMove);
+			_boardUI.OnMoveMade (Board, move, animateMove);
 
-			NotifyPlayerToMove ();
+			StartTurnPhase ();
 		}
 
 		public void NewGame (PlayerType whitePlayerType, PlayerType blackPlayerType) {
-			gameMoves.Clear ();
+			_gameMoves.Clear ();
 			if (loadCustomPosition) {
-				board.LoadPosition (customPosition);
-				searchBoard.LoadPosition (customPosition);
+				Board.LoadPosition (customPosition);
+				_searchBoard.LoadPosition (customPosition);
 			} else {
-				board.LoadStartPosition ();
-				searchBoard.LoadStartPosition ();
+				Board.LoadStartPosition ();
+				_searchBoard.LoadStartPosition ();
 			}
 			OnPositionLoaded?.Invoke ();
-			boardUI.UpdatePosition (board);
-			boardUI.ResetSquareColours ();
+			_boardUI.UpdatePosition (Board);
+			_boardUI.ResetSquareColours ();
 
-			CreatePlayer (ref whitePlayer, whitePlayerType);
-			CreatePlayer (ref blackPlayer, blackPlayerType);
+			CreatePlayer (ref _whitePlayer, whitePlayerType);
+			CreatePlayer (ref _blackPlayer, blackPlayerType);
 
-			gameResult = Result.Playing;
-			PrintGameResult (gameResult);
+			_gameResult = Result.Playing;
+			PrintGameResult (_gameResult);
 
-			NotifyPlayerToMove ();
+			StartTurnPhase ();
 
 		}
 
@@ -94,13 +94,13 @@ namespace Chess.Game {
 			Application.Quit ();
 		}
 
-		void NotifyPlayerToMove () {
-			gameResult = GetGameState ();
-			PrintGameResult (gameResult);
+		void StartTurnPhase () {
+			_gameResult = GetGameState ();
+			PrintGameResult (_gameResult);
 
-			if (gameResult == Result.Playing) {
-				playerToMove = (board.WhiteToMove) ? whitePlayer : blackPlayer;
-				playerToMove.NotifyTurnToMove ();
+			if (_gameResult == Result.Playing) {
+				_playerToMove = (Board.WhiteToMove) ? _whitePlayer : _blackPlayer;
+				_playerToMove.StartTurnPhase ();
 
 			} else {
 				Debug.Log ("Game Over");
@@ -129,28 +129,28 @@ namespace Chess.Game {
 
 		Result GetGameState () {
 			MoveGenerator moveGenerator = new MoveGenerator ();
-			var moves = moveGenerator.GenerateMoves (board);
+			var moves = moveGenerator.GenerateMoves (Board);
 
 			// Look for mate/stalemate
 			if (moves.Count == 0) {
 				if (moveGenerator.InCheck ()) {
-					return (board.WhiteToMove) ? Result.WhiteIsMated : Result.BlackIsMated;
+					return (Board.WhiteToMove) ? Result.WhiteIsMated : Result.BlackIsMated;
 				}
 				return Result.Stalemate;
 			}
             
 			// Threefold repetition
-			int repCount = board.RepetitionPositionHistory.Count ((x => x == board.ZobristKey));
+			int repCount = Board.RepetitionPositionHistory.Count ((x => x == Board.ZobristKey));
 			if (repCount == 3) {
 				return Result.Repetition;
 			}
 
 			// Look for insufficient material (not all cases implemented yet)
-			int numPawns = board.pawns[Board.WhiteIndex].Count + board.pawns[Board.BlackIndex].Count;
-			int numRooks = board.rooks[Board.WhiteIndex].Count + board.rooks[Board.BlackIndex].Count;
-			int numQueens = board.queens[Board.WhiteIndex].Count + board.queens[Board.BlackIndex].Count;
-			int numKnights = board.knights[Board.WhiteIndex].Count + board.knights[Board.BlackIndex].Count;
-			int numBishops = board.bishops[Board.WhiteIndex].Count + board.bishops[Board.BlackIndex].Count;
+			int numPawns = Board.pawns[Board.WhiteIndex].Count + Board.pawns[Board.BlackIndex].Count;
+			int numRooks = Board.rooks[Board.WhiteIndex].Count + Board.rooks[Board.BlackIndex].Count;
+			int numQueens = Board.queens[Board.WhiteIndex].Count + Board.queens[Board.BlackIndex].Count;
+			int numKnights = Board.knights[Board.WhiteIndex].Count + Board.knights[Board.BlackIndex].Count;
+			int numBishops = Board.bishops[Board.WhiteIndex].Count + Board.bishops[Board.BlackIndex].Count;
 
 			if (numPawns + numRooks + numQueens == 0) {
 				if (numKnights == 1 || numBishops == 1) {
@@ -167,9 +167,9 @@ namespace Chess.Game {
 			}
 
 			if (playerType == PlayerType.Human) {
-				player = new HumanPlayer (board);
+				player = new HumanPlayer (Board);
 			} else {
-				player = new AIPlayer (searchBoard, aiSettings);
+				player = new AIPlayer (_searchBoard, aiSettings);
 			}
 			player.onMoveChosen += OnMoveChosen;
 		}

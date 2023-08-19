@@ -23,7 +23,7 @@ namespace Chess.Game {
 			this.board = board;
 		}
 
-		public override void NotifyTurnToMove () {
+		public override void StartTurnPhase () {
 
 		}
 

@@ -94,10 +94,6 @@
 			}
 
 			onSearchComplete?.Invoke (bestMove);
-
-			if (!settings.useThreading) {
-				LogDebugInfo ();
-			}
 		}
 
 		public (Move move, int eval) GetSearchResult () {

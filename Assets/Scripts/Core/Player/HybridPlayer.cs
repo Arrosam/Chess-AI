@@ -5,57 +5,37 @@ namespace Chess.Game
 {
     public class HybridPlayer : Player
     {
-        private bool aiAssistanceMode = false;
-        private Search search;
-        private AISettings settings;
-        private bool moveFound;
-        private Move move;
-        private CancellationTokenSource cancelSearchTimer;
+        private PlayerSearch _playerSearch;
+        private bool _aiAssistantMode;
+        private bool _turnPhaseFinished;
 
-        public HybridPlayer(Board board, AISettings settings)
+        public HybridPlayer(Board board, AISettings settings, GameSettings gameSettings)
         {
-            this.settings = settings;
-            settings.requestAbortSearch += TimeOutThreadedSearch;
-            search = new Search (board, settings);
-            search.onSearchComplete += OnSearchComplete;
+            _playerSearch = new PlayerSearch(board, settings);
+            _aiAssistantMode = gameSettings.defaultAIAssistance;
+            _turnPhaseFinished = false;
         }
         public override void Update()
         {
-            
+            if (_aiAssistantMode && _turnPhaseFinished && _playerSearch.IfMoveFound())
+            {
+                ChoseMove(_playerSearch.GetMoveFound());
+                _turnPhaseFinished = false;
+            }
         }
 
-        public override void NotifyTurnToMove()
+        public override void StartTurnPhase()
         {
-            moveFound = false;
-            StartThreadedSearch();
-        }
-        
-        void StartSearch () {
-            search.StartSearch ();
-            moveFound = true;
-        }
-        
-        void StartThreadedSearch () {
-            Task.Factory.StartNew (() => search.StartSearch (), TaskCreationOptions.LongRunning);
-
-            if (!settings.endlessSearchMode) {
-                cancelSearchTimer = new CancellationTokenSource ();
-                Task.Delay (settings.searchTimeMillis, cancelSearchTimer.Token).ContinueWith ((t) => TimeOutThreadedSearch ());
-            }
-
-        }
-        
-        void TimeOutThreadedSearch () {
-            if (cancelSearchTimer == null || ! cancelSearchTimer.IsCancellationRequested) {
-                search.EndSearch ();
+            if (_aiAssistantMode)
+            {
+                ActivateAiAssistanceSearch();
             }
         }
-        
-        void OnSearchComplete (Move move) {
-            // Cancel search timer in case search finished before timer ran out (can happen when a mate is found)
-            cancelSearchTimer?.Cancel();
-            moveFound = true;
-            this.move = move;
+
+        public void ActivateAiAssistanceSearch()
+        {
+            _aiAssistantMode = true;
+            _playerSearch.StartThreadedSearch();
         }
     }
 }

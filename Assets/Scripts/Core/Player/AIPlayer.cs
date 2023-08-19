@@ -9,17 +9,21 @@
 
 		public AIPlayer (Board board, AISettings settings)
 		{
-			_playerSearch = new PlayerSearch(board, settings, ChoseMove);
+			_playerSearch = new PlayerSearch(board, settings);
 		}
-
-		// Update running on Unity main thread. This is used to return the chosen move so as
-		// not to end up on a different thread and unable to interface with Unity stuff.
+        
 		public override void Update () {
-			_playerSearch.onUpdate();
+			if (turnPhaseFinished && _playerSearch.IfMoveFound())
+			{
+                _playerSearch.ResetMoveFound();
+                ChoseMove(_playerSearch.GetMoveFound());
+			}
 		}
 
-		public override void NotifyTurnToMove () {
+		public override void StartTurnPhase () {
 			_playerSearch.StartThreadedSearch ();
+			// Only trigger after skill casted
+			turnPhaseFinished = true;
 		}
 	}
 }

@@ -12,12 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6ea222b713a9e459caf3ca327745aa40, type: 3}
   m_Name: Settings
   m_EditorClassIdentifier: 
-  depth: 8
+  depth: 3
   useIterativeDeepening: 0
   useTranspositionTable: 1
-  useThreading: 0
   useFixedDepthSearch: 0
-  searchTimeMillis: 10000
+  searchTimeMillis: 1000
   endlessSearchMode: 0
   clearTTEachMove: 1
   promotionsToSearch: 2

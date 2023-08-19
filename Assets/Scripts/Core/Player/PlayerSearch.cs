@@ -10,24 +10,12 @@ namespace Chess.Game
         bool _moveFound;
         Move _move;
         CancellationTokenSource _cancelSearchTimer;
-        private event System.Action<Move> _choseMove;
 
-        public PlayerSearch(Board board, AISettings aiSettings, System.Action<Move> choseMove)
+        public PlayerSearch(Board board, AISettings aiSettings)
         {
             _settings = aiSettings;
-            aiSettings.requestAbortSearch += TimeOutThreadedSearch;
             _search = new Search(board, _settings);
             _search.onSearchComplete += OnSearchComplete;
-            _choseMove += choseMove;
-        }
-
-        public void onUpdate()
-        {
-            if (_moveFound)
-            {
-                _moveFound = false;
-                _choseMove?.Invoke(_move);
-            }
         }
 
         public void StartThreadedSearch()
@@ -60,5 +48,20 @@ namespace Chess.Game
             _moveFound = true;
             _move = move;
         }
+
+        public Move GetMoveFound()
+        {
+            return _move;
+        }
+
+        public bool IfMoveFound()
+        {
+            return _moveFound;
+        }
+
+        public void ResetMoveFound()
+        {
+            _moveFound = false;
+        } 
     }
 }
