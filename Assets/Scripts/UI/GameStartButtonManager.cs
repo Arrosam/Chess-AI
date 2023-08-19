@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace Chess
 {
-    public class ButtonManager : MonoBehaviour
+    public class GameStartButtonManager : MonoBehaviour
     {
         public GameManager gameManager;
         

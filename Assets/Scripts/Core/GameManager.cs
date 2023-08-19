@@ -6,7 +6,7 @@ using UnityEngine;
 namespace Chess.Game {
 	public class GameManager : MonoBehaviour {
 
-		public enum Result { Playing, WhiteIsMated, BlackIsMated, Stalemate, Repetition, InsufficientMaterial }
+		public enum Result { Playing, WhiteIsMated, BlackIsMated, Stalemate}
 
 		public event System.Action OnPositionLoaded;
 		public event System.Action<Move> OnMoveMade;
@@ -115,15 +115,9 @@ namespace Chess.Game {
 				resultUI.text = "";
 			} else if (result == Result.WhiteIsMated || result == Result.BlackIsMated) {
 				resultUI.text = "Checkmate!";
-			} else if (result == Result.Repetition) {
-				resultUI.text = "Draw";
-				resultUI.text += subtitleSettings + "\n(3-fold repetition)";
 			} else if (result == Result.Stalemate) {
 				resultUI.text = "Draw";
 				resultUI.text += subtitleSettings + "\n(Stalemate)";
-			} else if (result == Result.InsufficientMaterial) {
-				resultUI.text = "Draw";
-				resultUI.text += subtitleSettings + "\n(Insufficient material)";
 			}
 		}
 
@@ -137,25 +131,6 @@ namespace Chess.Game {
 					return (Board.WhiteToMove) ? Result.WhiteIsMated : Result.BlackIsMated;
 				}
 				return Result.Stalemate;
-			}
-            
-			// Threefold repetition
-			int repCount = Board.RepetitionPositionHistory.Count ((x => x == Board.ZobristKey));
-			if (repCount == 3) {
-				return Result.Repetition;
-			}
-
-			// Look for insufficient material (not all cases implemented yet)
-			int numPawns = Board.pawns[Board.WhiteIndex].Count + Board.pawns[Board.BlackIndex].Count;
-			int numRooks = Board.rooks[Board.WhiteIndex].Count + Board.rooks[Board.BlackIndex].Count;
-			int numQueens = Board.queens[Board.WhiteIndex].Count + Board.queens[Board.BlackIndex].Count;
-			int numKnights = Board.knights[Board.WhiteIndex].Count + Board.knights[Board.BlackIndex].Count;
-			int numBishops = Board.bishops[Board.WhiteIndex].Count + Board.bishops[Board.BlackIndex].Count;
-
-			if (numPawns + numRooks + numQueens == 0) {
-				if (numKnights == 1 || numBishops == 1) {
-					return Result.InsufficientMaterial;
-				}
 			}
 
 			return Result.Playing;

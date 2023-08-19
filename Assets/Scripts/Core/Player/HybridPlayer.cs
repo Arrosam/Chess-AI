@@ -7,20 +7,18 @@ namespace Chess.Game
     {
         private PlayerSearch _playerSearch;
         private bool _aiAssistantMode;
-        private bool _turnPhaseFinished;
 
         public HybridPlayer(Board board, AISettings settings, GameSettings gameSettings)
         {
             _playerSearch = new PlayerSearch(board, settings);
             _aiAssistantMode = gameSettings.defaultAIAssistance;
-            _turnPhaseFinished = false;
         }
         public override void Update()
         {
-            if (_aiAssistantMode && _turnPhaseFinished && _playerSearch.IfMoveFound())
+            if (_aiAssistantMode && turnPhaseFinished && _playerSearch.IfMoveFound())
             {
                 ChoseMove(_playerSearch.GetMoveFound());
-                _turnPhaseFinished = false;
+                turnPhaseFinished = false;
             }
         }
 
@@ -30,6 +28,7 @@ namespace Chess.Game
             {
                 ActivateAiAssistanceSearch();
             }
+            turnPhaseFinished = true;
         }
 
         public void ActivateAiAssistanceSearch()
