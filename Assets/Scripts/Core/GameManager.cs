@@ -50,8 +50,9 @@ namespace Chess.Game {
 
 		}
 
-		void OnMoveChosen (Move move) {
-			bool animateMove = _playerToMove is AIPlayer;
+		void OnMoveChosen (Move move)
+		{
+			bool animateMove = _playerToMove.AnimateMoving();
 			Board.MakeMove (move);
 			_searchBoard.MakeMove (move);
             

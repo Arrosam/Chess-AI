@@ -145,5 +145,10 @@ namespace Chess.Game {
 				}
 			}
 		}
+
+		public override bool AnimateMoving()
+		{
+			return false;
+		}
 	}
 }

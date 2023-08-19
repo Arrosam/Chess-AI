@@ -11,6 +11,11 @@ namespace Chess.Game {
 
 		public abstract void StartTurnPhase ();
 
+		public virtual bool AnimateMoving()
+		{
+			return true;
+		}
+
 		protected virtual void ChoseMove (Move move) {
 			onMoveChosen?.Invoke (move);
 			turnPhaseFinished = false;

@@ -36,5 +36,10 @@ namespace Chess.Game
             _aiAssistantMode = true;
             _playerSearch.StartThreadedSearch();
         }
+
+        public override bool AnimateMoving()
+        {
+            return _aiAssistantMode;
+        }
     }
 }
