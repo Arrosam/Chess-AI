@@ -19,10 +19,7 @@ namespace Chess.Game {
 		public PlayerType whitePlayerType;
 		public PlayerType blackPlayerType;
 		public AISettings aiSettings;
-		public Color[] colors;
 
-		public bool useClocks;
-		public TMPro.TMP_Text aiDiagnosticsUI;
 		public TMPro.TMP_Text resultUI;
 
 		Result _gameResult;
@@ -30,7 +27,6 @@ namespace Chess.Game {
 		Player _whitePlayer;
 		Player _blackPlayer;
 		Player _playerToMove;
-		List<Move> _gameMoves;
 		BoardUI _boardUI;
 
 		public Board Board { get; private set; }
@@ -40,7 +36,6 @@ namespace Chess.Game {
 			Application.targetFrameRate = 60;
 
 			_boardUI = FindObjectOfType<BoardUI> ();
-			_gameMoves = new List<Move> ();
 			Board = new Board ();
 			_searchBoard = new Board ();
 
@@ -59,8 +54,7 @@ namespace Chess.Game {
 			bool animateMove = _playerToMove is AIPlayer;
 			Board.MakeMove (move);
 			_searchBoard.MakeMove (move);
-
-			_gameMoves.Add (move);
+            
 			OnMoveMade?.Invoke (move);
 			_boardUI.OnMoveMade (Board, move, animateMove);
 
@@ -68,7 +62,6 @@ namespace Chess.Game {
 		}
 
 		public void NewGame (PlayerType whitePlayerType, PlayerType blackPlayerType) {
-			_gameMoves.Clear ();
 			if (loadCustomPosition) {
 				Board.LoadPosition (customPosition);
 				_searchBoard.LoadPosition (customPosition);
