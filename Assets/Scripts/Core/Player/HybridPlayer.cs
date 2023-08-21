@@ -6,11 +6,13 @@ namespace Chess.Game
     public class HybridPlayer : Player
     {
         private PlayerSearch _playerSearch;
+        private Board _searchBoard;
         private bool _aiAssistantMode;
 
-        public HybridPlayer(Board board, AISettings settings, GameSettings gameSettings)
+        public HybridPlayer(Board board, Board searchBoard, AISettings settings, GameSettings gameSettings)
         {
-            _playerSearch = new PlayerSearch(board, settings);
+            _searchBoard = searchBoard;
+            _playerSearch = new PlayerSearch(searchBoard, settings);
             _aiAssistantMode = gameSettings.defaultAIAssistance;
         }
         public override void Update()

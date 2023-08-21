@@ -302,11 +302,6 @@
 
 		}
 
-		// Load the starting position
-		public void LoadStartPosition () {
-			LoadPosition (FenUtility.startFen);
-		}
-
 		// Load custom position from fen string
 		public void LoadPosition (string fen) {
 			Initialize ();

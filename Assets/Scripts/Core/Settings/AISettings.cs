@@ -5,7 +5,7 @@ namespace Chess {
 	using System.Collections;
 	using UnityEngine;
 
-	[CreateAssetMenu (menuName = "AI/Settings")]
+	[CreateAssetMenu (menuName = "Settings/AI")]
 	public class AISettings : ScriptableObject {
         
 
