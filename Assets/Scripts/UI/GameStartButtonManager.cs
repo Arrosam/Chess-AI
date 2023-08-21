@@ -12,14 +12,14 @@ namespace Chess
         
         public void NewGame ()
         {
-            var humanPlayer = PlayerFactory.PlayerType.Human;
-            var aiPlayer = PlayerFactory.PlayerType.AI;
+            var humanPlayer = PlayerType.Human;
+            var aiPlayer = PlayerType.AI;
             gameManager.NewGame (humanPlayer, aiPlayer);
         }
 
         public void NewAIvsAIGame()
         {
-            var aiPlayer = PlayerFactory.PlayerType.AI;
+            var aiPlayer = PlayerType.AI;
             gameManager.NewGame(aiPlayer, aiPlayer);
         }
     }
