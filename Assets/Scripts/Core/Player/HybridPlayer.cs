@@ -28,14 +28,14 @@ namespace Chess.Game
         {
             if (_aiAssistantMode)
             {
-                ActivateAiAssistanceSearch();
+                SwitchAIAssistanceSearch(true);
             }
             turnPhaseFinished = true;
         }
 
-        public void ActivateAiAssistanceSearch()
+        public void SwitchAIAssistanceSearch(bool assistance)
         {
-            _aiAssistantMode = true;
+            _aiAssistantMode = assistance;
             _playerSearch.StartThreadedSearch();
         }
 

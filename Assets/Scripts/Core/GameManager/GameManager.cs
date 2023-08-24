@@ -4,7 +4,8 @@ using System.Linq;
 using UnityEngine;
 
 namespace Chess.Game {
-	public class GameManager : MonoBehaviour {
+	public class GameManager : MonoBehaviour
+	{
 
 		public event System.Action OnPositionLoaded;
 		public event System.Action<Move> OnMoveMade;
@@ -15,20 +16,27 @@ namespace Chess.Game {
 		public TMPro.TMP_Text resultUI;
 
 		Result _gameResult;
-
-
 		BoardUI _boardUI;
 
-		private GameBoardManager _gameBoardManager;
-		private GamePlayerManager _gamePlayerManager;
+		public AISettings whiteAISettings;
+		public AISettings blackAISettings;
+		public GameSettings gameSettings;
+
+		public GameBoardManager _gameBoardManager { get; private set; }
+
+		public GamePlayerManager _gamePlayerManager { get; private set; }
+
+		public PlayerType defaultWhitePlayerType = PlayerType.Human;
+		public PlayerType defaultBlackPlayerType = PlayerType.AI;
 
 		void Start () {
 			Application.targetFrameRate = 60;
 
 			_boardUI = FindObjectOfType<BoardUI> ();
 			_gameBoardManager = new GameBoardManager();
+			_gamePlayerManager = new GamePlayerManager(whiteAISettings, blackAISettings, gameSettings);
 
-			NewGame (_gamePlayerManager.whitePlayerType, _gamePlayerManager.blackPlayerType);
+			NewGame (defaultWhitePlayerType, defaultBlackPlayerType);
 		}
 
 		void Update () {
@@ -42,7 +50,7 @@ namespace Chess.Game {
 			bool animateMove = _gamePlayerManager.IfCurrentPlayerAnimateMoving();
 			_gameBoardManager.MakeMove(move);
             
-			OnMoveMade?.Invoke (move);
+			//OnMoveMade?.Invoke (move);
 			_boardUI.OnMoveMade (_gameBoardManager.Board, move, animateMove);
 
 			StartTurnPhase ();
@@ -58,7 +66,8 @@ namespace Chess.Game {
 			_boardUI.UpdatePosition (_gameBoardManager.Board);
 			_boardUI.ResetSquareColours ();
             
-			_gamePlayerManager.InitializePlayer(whitePlayerType, blackPlayerType, _gameBoardManager, OnMoveChosen);
+			_gamePlayerManager.LoadPlayerType(whitePlayerType, blackPlayerType);
+			_gamePlayerManager.InitializePlayer(_gameBoardManager, OnMoveChosen);
 
 			_gameResult = Result.Playing;
 			PrintGameResult (_gameResult);

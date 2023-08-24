@@ -12,15 +12,17 @@ namespace Chess
         
         public void NewGame ()
         {
-            var humanPlayer = PlayerType.Human;
-            var aiPlayer = PlayerType.AI;
-            gameManager.NewGame (humanPlayer, aiPlayer);
+            gameManager.NewGame (PlayerType.Human, PlayerType.AI);
         }
 
         public void NewAIvsAIGame()
         {
-            var aiPlayer = PlayerType.AI;
-            gameManager.NewGame(aiPlayer, aiPlayer);
+            gameManager.NewGame(PlayerType.AI, PlayerType.AI);
+        }
+
+        public void NewHybridVsAIGame()
+        {
+            gameManager.NewGame(PlayerType.Hybrid, PlayerType.AI);
         }
     }
 }

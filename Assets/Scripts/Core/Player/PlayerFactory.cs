@@ -6,9 +6,21 @@ namespace Chess.Game
 {
     public static class PlayerFactory
     {
+        static AISettings aiSettings;
+        static GameSettings gameSettings;
 
-        public static Player CreatePlayer(PlayerType playerType, AISettings aiSettings, GameSettings gameSettings,
-            GameBoardManager gameBoardManager, Action<Move> onMoveChosen)
+        public static void LoadAISettings(AISettings aiSettings)
+        {
+            PlayerFactory.aiSettings = aiSettings;
+        }
+        
+        public static void LoadGameSettings(GameSettings gameSettings)
+        {
+            PlayerFactory.gameSettings = gameSettings;
+        }
+
+        public static Player CreatePlayer(PlayerType playerType, GameBoardManager gameBoardManager,
+            Action<Move> onMoveChosen)
         {
             Player player;
             if (playerType == PlayerType.Human)
