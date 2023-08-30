@@ -1,10 +1,7 @@
 ﻿namespace Chess.Game {
 	public class HumanPlayer : Player {
 		
-		private PlayerInputManager _playerInputManager;
-		public HumanPlayer (Board board) {
-			_playerInputManager = new PlayerInputManager(board, ChoseMove);
-		}
+		private PlayerInputManager _playerInputManager = new PlayerInputManager();
 
 		public override void StartTurnPhase () {
 

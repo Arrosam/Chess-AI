@@ -7,9 +7,9 @@
 		private PlayerSearch _playerSearch;
 		
 
-		public AIPlayer (Board board, AISettings settings)
+		public AIPlayer (AISettings settings)
 		{
-			_playerSearch = new PlayerSearch(board, settings);
+			_playerSearch = new PlayerSearch(settings);
 		}
         
 		public override void Update () {

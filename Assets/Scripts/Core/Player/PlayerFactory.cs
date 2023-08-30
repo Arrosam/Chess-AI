@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Chess.Game
 {
-    public static class PlayerFactory
+    public class PlayerFactory
     {
         static AISettings aiSettings;
         static GameSettings gameSettings;
@@ -19,27 +19,23 @@ namespace Chess.Game
             PlayerFactory.gameSettings = gameSettings;
         }
 
-        public static Player CreatePlayer(PlayerType playerType, GameBoardManager gameBoardManager,
-            Action<Move> onMoveChosen)
+        public static Player CreatePlayer(PlayerType playerType)
         {
             Player player;
             if (playerType == PlayerType.Human)
             {
-                player = new HumanPlayer(gameBoardManager.Board);
+                player = new HumanPlayer();
             }else if (playerType == PlayerType.Hybrid)
             {
-                player = new HybridPlayer(gameBoardManager.Board, gameBoardManager.SearchBoard, aiSettings,
-                    gameSettings);
+                player = new HybridPlayer(aiSettings, gameSettings);
             }else if (playerType == PlayerType.AI)
             {
-                player = new AIPlayer(gameBoardManager.SearchBoard, aiSettings);
+                player = new AIPlayer(aiSettings);
             }
             else
             {
                 throw new Exception("Player type not recognized");
-            }
-
-            player.onMoveChosen += onMoveChosen;
+            }   
             return player;
         }
     }

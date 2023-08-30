@@ -1,43 +1,45 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
+using UnityEngine;
 
 namespace Chess.Game
 {
     public class HybridPlayer : Player
     {
         private PlayerSearch _playerSearch;
-        private Board _searchBoard;
+        private PlayerInputManager _playerInputManager;
         private bool _aiAssistantMode;
 
-        public HybridPlayer(Board board, Board searchBoard, AISettings settings, GameSettings gameSettings)
+        public HybridPlayer(AISettings settings, GameSettings gameSettings)
         {
-            _searchBoard = searchBoard;
-            _playerSearch = new PlayerSearch(searchBoard, settings);
+            _playerSearch = new PlayerSearch(settings);
+            _playerInputManager = new PlayerInputManager();
             _aiAssistantMode = gameSettings.defaultAIAssistance;
         }
         public override void Update()
         {
+            _playerInputManager.HandleInput();
             if (_aiAssistantMode && turnPhaseFinished && _playerSearch.IfMoveFound())
             {
+                _aiAssistantMode = false;
+                _playerSearch.ResetMoveFound();
                 ChoseMove(_playerSearch.GetMoveFound());
-                turnPhaseFinished = false;
             }
         }
 
         public override void StartTurnPhase()
         {
-            if (_aiAssistantMode)
-            {
-                SwitchAIAssistanceSearch(true);
-            }
+            _playerSearch.StartThreadedSearch();
             turnPhaseFinished = true;
         }
 
-        public void SwitchAIAssistanceSearch(bool assistance)
+        public void TriggerAIAssistanceSearch()
         {
-            _aiAssistantMode = assistance;
-            _playerSearch.StartThreadedSearch();
+            Debug.Log("Assistance Triggered");
+            _aiAssistantMode = true;
         }
+        
+
 
         public override bool AnimateMoving()
         {

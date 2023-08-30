@@ -12,9 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6ea222b713a9e459caf3ca327745aa40, type: 3}
   m_Name: AggresiveAI
   m_EditorClassIdentifier: 
-  depth: 0
+  depth: 3
   useIterativeDeepening: 0
-  useTranspositionTable: 0
+  useTranspositionTable: 1
   useFixedDepthSearch: 0
-  searchTimeMillis: 1000
-  promotionsToSearch: 0
+  searchTimeMillis: 800
+  promotionsToSearch: 1

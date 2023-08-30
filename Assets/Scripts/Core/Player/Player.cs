@@ -4,8 +4,9 @@ using UnityEngine;
 
 namespace Chess.Game {
 	public abstract class Player {
-		public event System.Action<Move> onMoveChosen;
+		
 		protected bool turnPhaseFinished;
+		private GameManager _gameManager = Object.FindObjectOfType<GameManager>();
 
 		public abstract void Update ();
 
@@ -15,9 +16,10 @@ namespace Chess.Game {
 		{
 			return true;
 		}
-
-		protected virtual void ChoseMove (Move move) {
-			onMoveChosen?.Invoke (move);
+		
+		protected virtual void ChoseMove (Move move)
+		{
+			_gameManager.OnMoveChosen(move);
 			turnPhaseFinished = false;
 		}
 	}

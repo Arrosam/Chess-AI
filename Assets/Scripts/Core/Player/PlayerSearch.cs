@@ -1,5 +1,6 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
+using UnityEngine;
 
 namespace Chess.Game
 {
@@ -11,8 +12,9 @@ namespace Chess.Game
         Move _move;
         CancellationTokenSource _cancelSearchTimer;
 
-        public PlayerSearch(Board board, AISettings aiSettings)
+        public PlayerSearch(AISettings aiSettings)
         {
+            Board board = GameBoardManager.Instance.Board;
             _settings = aiSettings;
             _search = new Search(board, _settings);
             _search.onSearchComplete += OnSearchComplete;

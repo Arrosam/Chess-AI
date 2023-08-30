@@ -1,62 +1,65 @@
 ﻿using System;
 using Unity.VisualScripting;
+using UnityEngine;
 
 namespace Chess.Game
 {
-    public class GamePlayerManager
+    public class GamePlayerManager : MonoBehaviour
+
     {
-        PlayerType whitePlayerType;
-        PlayerType blackPlayerType;
-        public AISettings whiteAISettings;
-        public AISettings blackAISettings;
-        public GameSettings gameSettings;
-        
-        Player _whitePlayer;
-        Player _blackPlayer;
-        Player _playerToMove;
+    public static GamePlayerManager Instance { get; private set; }
+    PlayerType whitePlayerType;
+    PlayerType blackPlayerType;
+    public AISettings whiteAISettings;
+    public AISettings blackAISettings;
+    public GameSettings gameSettings;
 
-        public GamePlayerManager(AISettings whiteAISettings, AISettings blackAISettings, GameSettings gameSettings)
-        {
-            this.whiteAISettings = whiteAISettings;
-            this.blackAISettings = blackAISettings;
-            this.gameSettings = gameSettings;
-        }
+    Player _whitePlayer;
+    Player _blackPlayer;
+    public Player PlayerToMove { get; private set; }
 
-        public void InitializePlayer(GameBoardManager gameBoardManager, Action<Move> OnMoveChosen)
-        {
-            PlayerFactory.LoadGameSettings(gameSettings);
-            PlayerFactory.LoadAISettings(whiteAISettings);
-            _whitePlayer = PlayerFactory.CreatePlayer(whitePlayerType, gameBoardManager, OnMoveChosen);
-            PlayerFactory.LoadAISettings(blackAISettings);
-            _blackPlayer = PlayerFactory.CreatePlayer(blackPlayerType, gameBoardManager, OnMoveChosen);
-        }
+    private void Awake()
+    {
+        Instance = this;
+    }
 
-        public void UpdatePlayerToMove()
-        {
-            _playerToMove.Update();
-        }
+    public GamePlayerManager(AISettings whiteAISettings, AISettings blackAISettings, GameSettings gameSettings)
+    {
+        this.whiteAISettings = whiteAISettings;
+        this.blackAISettings = blackAISettings;
+        this.gameSettings = gameSettings;
+    }
 
-        public bool IfCurrentPlayerAnimateMoving()
-        {
-            return _playerToMove.AnimateMoving();
-        }
+    public void InitializePlayer()
+    {
+        PlayerFactory.LoadGameSettings(gameSettings);
+        PlayerFactory.LoadAISettings(whiteAISettings);
+        _whitePlayer = PlayerFactory.CreatePlayer(whitePlayerType);
+        PlayerFactory.LoadAISettings(blackAISettings);
+        _blackPlayer = PlayerFactory.CreatePlayer(blackPlayerType);
+    }
 
-        public void UpdateCurrentPlayer(bool whitePlayerToMove)
-        {
-            _playerToMove = whitePlayerToMove ? _whitePlayer : _blackPlayer;
-            _playerToMove.StartTurnPhase ();
-        }
+    public void UpdatePlayerToMove()
+    {
+        PlayerToMove.Update();
+    }
 
-        public void LoadPlayerType(PlayerType whitePlayerType, PlayerType blackPlayerType)
-        {
-            this.whitePlayerType = whitePlayerType;
-            this.blackPlayerType = blackPlayerType;
-        }
+    public void UpdateCurrentPlayer(bool whitePlayerToMove)
+    {
+        PlayerToMove = whitePlayerToMove ? _whitePlayer : _blackPlayer;
+        PlayerToMove.StartTurnPhase();
+    }
 
-        public void SwitchAIAssistanceMode(bool isWhiteToSwitch, bool aiAssistanceMode)
-        {
-            HybridPlayer hybridPlayer = (HybridPlayer)(isWhiteToSwitch ? ref _whitePlayer : ref _blackPlayer);
-            hybridPlayer.SwitchAIAssistanceSearch(aiAssistanceMode);
-        }
+    public void LoadPlayerType(PlayerType whitePlayerType, PlayerType blackPlayerType)
+    {
+        this.whitePlayerType = whitePlayerType;
+        this.blackPlayerType = blackPlayerType;
+    }
+
+    public void TriggerAIAssistanceMode(bool isWhiteToSwitch)
+    {
+        HybridPlayer hybridPlayer = (HybridPlayer)(isWhiteToSwitch ? _whitePlayer : _blackPlayer);
+        hybridPlayer.TriggerAIAssistanceSearch();
+    }
     }
 }

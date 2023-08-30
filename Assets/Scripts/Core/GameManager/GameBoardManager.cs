@@ -1,18 +1,35 @@
 ﻿using System;
+using UnityEngine;
 
 namespace Chess.Game
 {
-    public class GameBoardManager
+    public class GameBoardManager : MonoBehaviour
     {
+        public static GameBoardManager Instance { get; private set; }
         public Board Board { get; private set; } = new();
         public Board SearchBoard { get; private set; } = new(); // Duplicate version of board used for ai search
+        
+        private void Awake()
+        {
+            Instance = this;
+        }
+
+        private void OnEnable()
+        {
+            GameManager.OnMoveMade += MakeMove;
+        }
+
+        private void OnDisable()
+        {
+            GameManager.OnMoveMade -= MakeMove;
+        }
 
         public void MakeMove(Move move)
         {
             Board.MakeMove(move);
             SearchBoard.MakeMove(move);
         }
-
+    
         public void LoadPosition(String position = FenUtility.startFen)
         {
             Board.LoadPosition(position);

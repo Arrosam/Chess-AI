@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -7,8 +8,9 @@ namespace Chess.Game {
 	public class GameManager : MonoBehaviour
 	{
 
-		public event System.Action OnPositionLoaded;
-		public event System.Action<Move> OnMoveMade;
+		public static GameManager Instance { get; private set; }
+		public static event Action OnPositionLoaded;
+		public static event Action<Move> OnMoveMade;
 
 		public bool loadCustomPosition;
 		public string customPosition = "1rbq1r1k/2pp2pp/p1n3p1/2b1p3/R3P3/1BP2N2/1P3PPP/1NBQ1RK1 w - - 0 1";
@@ -16,58 +18,42 @@ namespace Chess.Game {
 		public TMPro.TMP_Text resultUI;
 
 		Result _gameResult;
-		BoardUI _boardUI;
-
-		public AISettings whiteAISettings;
-		public AISettings blackAISettings;
-		public GameSettings gameSettings;
-
-		public GameBoardManager _gameBoardManager { get; private set; }
-
-		public GamePlayerManager _gamePlayerManager { get; private set; }
 
 		public PlayerType defaultWhitePlayerType = PlayerType.Human;
 		public PlayerType defaultBlackPlayerType = PlayerType.AI;
 
+		private void Awake()
+		{
+			Instance = this;
+		}
+
 		void Start () {
 			Application.targetFrameRate = 60;
-
-			_boardUI = FindObjectOfType<BoardUI> ();
-			_gameBoardManager = new GameBoardManager();
-			_gamePlayerManager = new GamePlayerManager(whiteAISettings, blackAISettings, gameSettings);
-
 			NewGame (defaultWhitePlayerType, defaultBlackPlayerType);
 		}
 
 		void Update () {
 			if (_gameResult == Result.Playing) {
-				_gamePlayerManager.UpdatePlayerToMove();
+				GamePlayerManager.Instance.UpdatePlayerToMove();
 			}
 		}
 
-		void OnMoveChosen (Move move)
+		public void OnMoveChosen (Move move)
 		{
-			bool animateMove = _gamePlayerManager.IfCurrentPlayerAnimateMoving();
-			_gameBoardManager.MakeMove(move);
-            
-			//OnMoveMade?.Invoke (move);
-			_boardUI.OnMoveMade (_gameBoardManager.Board, move, animateMove);
-
+			OnMoveMade?.Invoke (move);
 			StartTurnPhase ();
 		}
 
 		public void NewGame (PlayerType whitePlayerType, PlayerType blackPlayerType) {
 			if (loadCustomPosition) {
-				_gameBoardManager.LoadPosition(customPosition);
+				GameBoardManager.Instance.LoadPosition(customPosition);
 			} else {
-				_gameBoardManager.LoadPosition();
+				GameBoardManager.Instance.LoadPosition();
 			}
-			OnPositionLoaded?.Invoke ();
-			_boardUI.UpdatePosition (_gameBoardManager.Board);
-			_boardUI.ResetSquareColours ();
+			OnPositionLoaded?.Invoke();
             
-			_gamePlayerManager.LoadPlayerType(whitePlayerType, blackPlayerType);
-			_gamePlayerManager.InitializePlayer(_gameBoardManager, OnMoveChosen);
+			GamePlayerManager.Instance.LoadPlayerType(whitePlayerType, blackPlayerType);
+			GamePlayerManager.Instance.InitializePlayer();
 
 			_gameResult = Result.Playing;
 			PrintGameResult (_gameResult);
@@ -81,11 +67,11 @@ namespace Chess.Game {
 		}
 
 		void StartTurnPhase () {
-			_gameResult = _gameBoardManager.GetGameState ();
+			_gameResult = GameBoardManager.Instance.GetGameState ();
 			PrintGameResult (_gameResult);
 			if (_gameResult == Result.Playing)
 			{
-				_gamePlayerManager.UpdateCurrentPlayer(_gameBoardManager.IfWhitePlayerToMove());
+				GamePlayerManager.Instance.UpdateCurrentPlayer(GameBoardManager.Instance.IfWhitePlayerToMove());
 			} else {
 				Debug.Log ("Game Over");
 			}

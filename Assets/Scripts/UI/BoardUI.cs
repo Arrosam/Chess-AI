@@ -1,8 +1,11 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using UnityEngine;
 
 namespace Chess.Game {
-	public class BoardUI : MonoBehaviour {
+	public class BoardUI : MonoBehaviour
+	{
+		public static BoardUI Instance { get; private set; }
 		public PieceTheme pieceTheme;
 		public Piece3DTheme piece3DTheme;
 		public BoardTheme boardTheme;
@@ -21,10 +24,25 @@ namespace Chess.Game {
 		const float piece3DDepth = 0f;
 		const float piece3DDragDepth = -1f;
 
-		void Awake () {
+		void Awake ()
+		{
+			Instance = this;
 			moveGenerator = new MoveGenerator ();
-			CreateBoardUI ();
+			CreateBoardUI();
+		}
 
+		private void OnEnable()
+		{
+			GameManager.OnMoveMade += OnMoveMade;
+			GameManager.OnPositionLoaded += UpdatePosition;
+			GameManager.OnPositionLoaded += ResetSquareColours;
+		}
+
+		private void OnDisable()
+		{
+			GameManager.OnMoveMade -= OnMoveMade;
+			GameManager.OnPositionLoaded -= UpdatePosition;
+			GameManager.OnPositionLoaded -= ResetSquareColours;
 		}
 
 		void CreateBoardUI()
@@ -138,11 +156,12 @@ namespace Chess.Game {
 			return file >= 0 && file < 8 && rank >= 0 && rank < 8;
 		}
 
-		public void UpdatePosition (Board board) {
+		public void UpdatePosition () {
 			for (int rank = 0; rank < 8; rank++) {
 				for (int file = 0; file < 8; file++) {
 					Coord coord = new Coord (file, rank);
-					int piece = board.Square[BoardRepresentation.IndexFromCoord (coord.fileIndex, coord.rankIndex)];
+					int piece = GameBoardManager.Instance.Board.Square
+						[BoardRepresentation.IndexFromCoord (coord.fileIndex, coord.rankIndex)];
 					squarePieceRenderers[file, rank].sprite = pieceTheme.GetPieceSprite (piece);
 					squarePieceRenderers[file, rank].transform.position = PositionFromCoord (file, rank, pieceDepth);
 
@@ -154,7 +173,8 @@ namespace Chess.Game {
 					if(piece3DPrefab != null)
 					{
 						GameObject piece3D = Instantiate(
-							piece3DPrefab, squarePiece3DRenderers[file, rank].position, squarePiece3DRenderers[file,rank].rotation);
+							piece3DPrefab, squarePiece3DRenderers[file, rank].position, 
+							squarePiece3DRenderers[file,rank].rotation);
 						piece3D.transform.parent = squarePiece3DRenderers[file, rank];
 					}
 					squarePiece3DRenderers[file, rank].position = PositionFromCoord(file, rank, piece3DDepth);
@@ -162,13 +182,16 @@ namespace Chess.Game {
 			}
 
 		}
-
-		public void OnMoveMade (Board board, Move move, bool animate = false) {
+		
+		public void OnMoveMade (Move move)
+		{
+			Player movingPlayer = GamePlayerManager.Instance.PlayerToMove;
+			Board board = GameBoardManager.Instance.Board;
 			lastMadeMove = move;
-			if (animate) {
+			if (movingPlayer.AnimateMoving()) {
 				StartCoroutine (AnimateMove (move, board));
 			} else {
-				UpdatePosition (board);
+				UpdatePosition ();
 				ResetSquareColours ();
 			}
 		}
@@ -184,7 +207,8 @@ namespace Chess.Game {
 			Vector3 targetPos = PositionFromCoord (targetCoord, pieceDepth);
 			Vector3 start3DPos = PositionFromCoord(startCoord, piece3DDepth);
 			Vector3 target3DPos = PositionFromCoord(targetCoord, piece3DDepth);
-			SetSquareColour (BoardRepresentation.CoordFromIndex (move.StartSquare), boardTheme.lightSquares.moveFromHighlight, boardTheme.darkSquares.moveFromHighlight);
+			SetSquareColour (BoardRepresentation.CoordFromIndex (move.StartSquare),
+				boardTheme.lightSquares.moveFromHighlight, boardTheme.darkSquares.moveFromHighlight);
 
 			while (t <= 1) {
 				yield return null;
@@ -192,7 +216,7 @@ namespace Chess.Game {
 				pieceT.position = Vector3.Lerp (startPos, targetPos, t);
 				piece3DT.position = Vector3.Lerp(start3DPos, target3DPos, t);
 			}
-			UpdatePosition (board);
+			UpdatePosition ();
 			ResetSquareColours ();
 			pieceT.position = startPos;
 			piece3DT.position = start3DPos;
@@ -200,25 +224,28 @@ namespace Chess.Game {
 		}
 
 		void HighlightMove (Move move) {
-			SetSquareColour (BoardRepresentation.CoordFromIndex (move.StartSquare), boardTheme.lightSquares.moveFromHighlight, boardTheme.darkSquares.moveFromHighlight);
-			SetSquareColour (BoardRepresentation.CoordFromIndex (move.TargetSquare), boardTheme.lightSquares.moveToHighlight, boardTheme.darkSquares.moveToHighlight);
+			SetSquareColour (BoardRepresentation.CoordFromIndex (move.StartSquare),
+				boardTheme.lightSquares.moveFromHighlight, boardTheme.darkSquares.moveFromHighlight);
+			SetSquareColour (BoardRepresentation.CoordFromIndex (move.TargetSquare),
+				boardTheme.lightSquares.moveToHighlight, boardTheme.darkSquares.moveToHighlight);
 		}
 
-		public void ResetSquareColours (bool highlight = true) {
+		public void ResetSquareColours()
+		{
 			for (int rank = 0; rank < 8; rank++) {
 				for (int file = 0; file < 8; file++) {
-					SetSquareColour (new Coord (file, rank), boardTheme.lightSquares.normal, boardTheme.darkSquares.normal);
+					SetSquareColour (new Coord (file, rank), boardTheme.lightSquares.normal,
+						boardTheme.darkSquares.normal);
 				}
 			}
-			if (highlight) {
-				if (!lastMadeMove.IsInvalid) {
-					HighlightMove (lastMadeMove);
-				}
+			if (!lastMadeMove.IsInvalid) {
+				HighlightMove (lastMadeMove);
 			}
 		}
 
 		void SetSquareColour (Coord square, Color lightCol, Color darkCol) {
-			squareRenderers[square.fileIndex, square.rankIndex].material.color = (square.IsLightSquare ()) ? lightCol : darkCol;
+			squareRenderers[square.fileIndex, square.rankIndex].material.color =
+				(square.IsLightSquare ()) ? lightCol : darkCol;
 		}
 
 		public Vector3 PositionFromCoord (int file, int rank, float depth = 0) {
