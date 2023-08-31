@@ -18,17 +18,15 @@ namespace Chess.Game
 		Camera _cam;
 		Coord _selectedPieceSquare;
 		Board _board;
-		private GameManager _gameManager;
 		private Move _intentionalMove;
 		
 		private Action<Move> _choseMove;
 		public PlayerInputManager() {
-			_boardUI = Object.FindObjectOfType<BoardUI> ();
+			_boardUI = BoardUI.Instance;
 			_cam = Camera.main;
-			_gameManager = Object.FindObjectOfType<GameManager>();
 			_board = GameBoardManager.Instance.Board;
-			_choseMove = _gameManager.OnMoveChosen;
 		}
+		
 		public void HandleInput () {
 			Vector2 mousePos = _cam.ScreenToWorldPoint (Input.mousePosition);
 

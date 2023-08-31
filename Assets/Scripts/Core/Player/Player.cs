@@ -6,7 +6,6 @@ namespace Chess.Game {
 	public abstract class Player {
 		
 		protected bool turnPhaseFinished;
-		private GameManager _gameManager = Object.FindObjectOfType<GameManager>();
 
 		public abstract void Update ();
 
@@ -17,9 +16,14 @@ namespace Chess.Game {
 			return true;
 		}
 		
+		public virtual void Deregister()
+		{
+			
+		}
+		
 		protected virtual void ChoseMove (Move move)
 		{
-			_gameManager.OnMoveChosen(move);
+			EventManager.OnMoveChosen(move);
 			turnPhaseFinished = false;
 		}
 	}

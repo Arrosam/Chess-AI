@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Chess.Game
 {
-    public class PlayerFactory
+    public static class PlayerFactory
     {
         static AISettings aiSettings;
         static GameSettings gameSettings;

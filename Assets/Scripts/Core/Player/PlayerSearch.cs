@@ -14,7 +14,7 @@ namespace Chess.Game
 
         public PlayerSearch(AISettings aiSettings)
         {
-            Board board = GameBoardManager.Instance.Board;
+            Board board = GameBoardManager.Instance.SearchBoard;
             _settings = aiSettings;
             _search = new Search(board, _settings);
             _search.onSearchComplete += OnSearchComplete;

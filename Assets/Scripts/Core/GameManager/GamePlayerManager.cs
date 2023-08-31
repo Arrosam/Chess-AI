@@ -5,14 +5,12 @@ using UnityEngine;
 namespace Chess.Game
 {
     public class GamePlayerManager : MonoBehaviour
-
     {
     public static GamePlayerManager Instance { get; private set; }
     PlayerType whitePlayerType;
     PlayerType blackPlayerType;
     public AISettings whiteAISettings;
     public AISettings blackAISettings;
-    public GameSettings gameSettings;
 
     Player _whitePlayer;
     Player _blackPlayer;
@@ -23,20 +21,32 @@ namespace Chess.Game
         Instance = this;
     }
 
-    public GamePlayerManager(AISettings whiteAISettings, AISettings blackAISettings, GameSettings gameSettings)
+    private void OnEnable()
     {
-        this.whiteAISettings = whiteAISettings;
-        this.blackAISettings = blackAISettings;
-        this.gameSettings = gameSettings;
+        EventManager.OnPositionLoaded += InitializePlayer;
     }
 
+    private void OnDisable()
+    {
+        EventManager.OnPositionLoaded -= InitializePlayer;
+    }
+    
     public void InitializePlayer()
     {
-        PlayerFactory.LoadGameSettings(gameSettings);
+        
+        PlayerFactory.LoadGameSettings(GameSettings.Instance);
         PlayerFactory.LoadAISettings(whiteAISettings);
         _whitePlayer = PlayerFactory.CreatePlayer(whitePlayerType);
         PlayerFactory.LoadAISettings(blackAISettings);
         _blackPlayer = PlayerFactory.CreatePlayer(blackPlayerType);
+    }
+
+    public void RecyclePlayer(ref Player player)
+    {
+        if (player != null)
+        {
+            player.Deregister();
+        }
     }
 
     public void UpdatePlayerToMove()
@@ -59,7 +69,7 @@ namespace Chess.Game
     public void TriggerAIAssistanceMode(bool isWhiteToSwitch)
     {
         HybridPlayer hybridPlayer = (HybridPlayer)(isWhiteToSwitch ? _whitePlayer : _blackPlayer);
-        hybridPlayer.TriggerAIAssistanceSearch();
+        EventManager.ToggleAI();
     }
     }
 }

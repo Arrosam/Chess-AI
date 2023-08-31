@@ -33,16 +33,16 @@ namespace Chess.Game {
 
 		private void OnEnable()
 		{
-			GameManager.OnMoveMade += OnMoveMade;
-			GameManager.OnPositionLoaded += UpdatePosition;
-			GameManager.OnPositionLoaded += ResetSquareColours;
+			EventManager.OnMoveMade += OnMoveMade;
+			EventManager.OnPositionLoaded += UpdatePosition;
+			EventManager.OnPositionLoaded += ResetSquareColours;
 		}
 
 		private void OnDisable()
 		{
-			GameManager.OnMoveMade -= OnMoveMade;
-			GameManager.OnPositionLoaded -= UpdatePosition;
-			GameManager.OnPositionLoaded -= ResetSquareColours;
+			EventManager.OnMoveMade -= OnMoveMade;
+			EventManager.OnPositionLoaded -= UpdatePosition;
+			EventManager.OnPositionLoaded -= ResetSquareColours;
 		}
 
 		void CreateBoardUI()

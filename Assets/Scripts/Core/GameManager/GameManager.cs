@@ -9,8 +9,6 @@ namespace Chess.Game {
 	{
 
 		public static GameManager Instance { get; private set; }
-		public static event Action OnPositionLoaded;
-		public static event Action<Move> OnMoveMade;
 
 		public bool loadCustomPosition;
 		public string customPosition = "1rbq1r1k/2pp2pp/p1n3p1/2b1p3/R3P3/1BP2N2/1P3PPP/1NBQ1RK1 w - - 0 1";
@@ -27,6 +25,16 @@ namespace Chess.Game {
 			Instance = this;
 		}
 
+		private void OnEnable()
+		{
+			EventManager.AfterMoveMade += StartTurnPhase;
+		}
+
+		private void OnDisable()
+		{
+			EventManager.AfterMoveMade -= StartTurnPhase;
+		}
+
 		void Start () {
 			Application.targetFrameRate = 60;
 			NewGame (defaultWhitePlayerType, defaultBlackPlayerType);
@@ -38,20 +46,13 @@ namespace Chess.Game {
 			}
 		}
 
-		public void OnMoveChosen (Move move)
-		{
-			OnMoveMade?.Invoke (move);
-			StartTurnPhase ();
-		}
-
 		public void NewGame (PlayerType whitePlayerType, PlayerType blackPlayerType) {
 			if (loadCustomPosition) {
 				GameBoardManager.Instance.LoadPosition(customPosition);
 			} else {
 				GameBoardManager.Instance.LoadPosition();
 			}
-			OnPositionLoaded?.Invoke();
-            
+			EventManager.OnPositionLoad();
 			GamePlayerManager.Instance.LoadPlayerType(whitePlayerType, blackPlayerType);
 			GamePlayerManager.Instance.InitializePlayer();
 

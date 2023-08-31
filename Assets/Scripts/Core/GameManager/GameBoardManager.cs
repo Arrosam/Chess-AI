@@ -16,12 +16,12 @@ namespace Chess.Game
 
         private void OnEnable()
         {
-            GameManager.OnMoveMade += MakeMove;
+            EventManager.OnMoveMade += MakeMove;
         }
 
         private void OnDisable()
         {
-            GameManager.OnMoveMade -= MakeMove;
+            EventManager.OnMoveMade -= MakeMove;
         }
 
         public void MakeMove(Move move)
