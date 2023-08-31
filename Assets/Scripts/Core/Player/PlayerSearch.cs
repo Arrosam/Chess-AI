@@ -4,12 +4,10 @@ using UnityEngine;
 
 namespace Chess.Game
 {
-    public class PlayerSearch
+    public class PlayerSearch : PlayerMoveGenerator
     {
         Search _search;
         AISettings _settings;
-        bool _moveFound;
-        Move _move;
         CancellationTokenSource _cancelSearchTimer;
 
         public PlayerSearch(AISettings aiSettings)
@@ -22,7 +20,7 @@ namespace Chess.Game
 
         public void StartThreadedSearch()
         {
-            _moveFound = false;
+            isMoveFound = false;
             Task.Factory.StartNew(() => _search.StartSearch(), TaskCreationOptions.LongRunning);
             
             _cancelSearchTimer = new CancellationTokenSource();
@@ -43,23 +41,10 @@ namespace Chess.Game
         {
             // Cancel search timer in case search finished before timer ran out (can happen when a mate is found)
             _cancelSearchTimer?.Cancel();
-            _moveFound = true;
-            _move = move;
+            isMoveFound = true;
+            moveReady = move;
         }
 
-        public Move GetMoveFound()
-        {
-            return _move;
-        }
-
-        public bool IfMoveFound()
-        {
-            return _moveFound;
-        }
-
-        public void ResetMoveFound()
-        {
-            _moveFound = false;
-        } 
+        
     }
 }

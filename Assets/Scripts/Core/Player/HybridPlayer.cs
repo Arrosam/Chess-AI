@@ -26,10 +26,17 @@ namespace Chess.Game
 
         public override void Update()
         {
-            _playerInputManager.HandleInput();
-            if (_aiAssistantMode && turnPhaseFinished && _playerSearch.IfMoveFound())
+            if (!_aiAssistantMode)
             {
-                _aiAssistantMode = false;
+                _playerInputManager.HandleInput();
+                if (_playerInputManager.IfMoveFound())
+                {
+                    _playerInputManager.ResetMoveFound();
+                    ChoseMove(_playerInputManager.GetMoveFound());
+                }
+            }else if (_playerSearch.IfMoveFound())
+            {
+                ChoseMove(_playerSearch.GetMoveFound());
             }
         }
 

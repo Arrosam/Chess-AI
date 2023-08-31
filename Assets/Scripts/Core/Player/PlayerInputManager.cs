@@ -4,7 +4,7 @@ using Object = UnityEngine.Object;
 
 namespace Chess.Game
 {
-    public class PlayerInputManager
+    public class PlayerInputManager : PlayerMoveGenerator
     {
         public enum InputState {
 			None,
@@ -14,19 +14,11 @@ namespace Chess.Game
 
 		InputState _currentState;
 
-		BoardUI _boardUI;
-		Camera _cam;
+		BoardUI _boardUI = BoardUI.Instance;
+		Camera _cam = Camera.main;
 		Coord _selectedPieceSquare;
-		Board _board;
-		private Move _intentionalMove;
-		
-		private Action<Move> _choseMove;
-		public PlayerInputManager() {
-			_boardUI = BoardUI.Instance;
-			_cam = Camera.main;
-			_board = GameBoardManager.Instance.Board;
-		}
-		
+		Board _board = GameBoardManager.Instance.Board;
+
 		public void HandleInput () {
 			Vector2 mousePos = _cam.ScreenToWorldPoint (Input.mousePosition);
 
@@ -121,8 +113,8 @@ namespace Chess.Game
 			}
 
 			if (moveIsLegal) {
-				_choseMove (chosenMove);
-				_intentionalMove = chosenMove;
+				moveReady = chosenMove;
+				isMoveFound = true;
 				_currentState = InputState.None;
 			} else {
 				CancelPieceSelection ();
