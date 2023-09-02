@@ -4,8 +4,6 @@ using UnityEngine;
 
 namespace Chess
 {
-
-    [CreateAssetMenu (menuName = "Settings/Game")]
     public class GameSettings : MonoBehaviour
     {
         public static GameSettings Instance;

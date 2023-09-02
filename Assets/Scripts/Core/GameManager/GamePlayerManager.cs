@@ -68,7 +68,6 @@ namespace Chess.Game
 
     public void TriggerAIAssistanceMode(bool isWhiteToSwitch)
     {
-        HybridPlayer hybridPlayer = (HybridPlayer)(isWhiteToSwitch ? _whitePlayer : _blackPlayer);
         EventManager.ToggleAI();
     }
     }

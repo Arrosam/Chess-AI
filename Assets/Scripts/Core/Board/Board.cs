@@ -1,4 +1,6 @@
-﻿namespace Chess {
+﻿using UnityEngine;
+
+namespace Chess {
 	using System.Collections.Generic;
 
 	public class Board {

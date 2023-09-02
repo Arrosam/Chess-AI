@@ -8,7 +8,7 @@ namespace Chess.Game
         public static GameBoardManager Instance { get; private set; }
         public Board Board { get; private set; } = new();
         public Board SearchBoard { get; private set; } = new(); // Duplicate version of board used for ai search
-        
+        public int[] BoardBit;
         private void Awake()
         {
             Instance = this;
@@ -27,12 +27,14 @@ namespace Chess.Game
         public void MakeMove(Move move)
         {
             Board.MakeMove(move);
+            BoardBit = Board.Square;
             SearchBoard.MakeMove(move);
         }
     
         public void LoadPosition(String position = FenUtility.startFen)
         {
             Board.LoadPosition(position);
+            BoardBit = Board.Square;
             SearchBoard.LoadPosition(position);
         }
 
