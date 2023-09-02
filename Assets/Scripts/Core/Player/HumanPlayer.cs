@@ -9,6 +9,11 @@
 
 		public override void Update () {
 			_playerInputManager.HandleInput ();
+			if (_playerInputManager.IfMoveFound())
+			{
+				_playerInputManager.ResetMoveFound();
+				ChoseMove(_playerInputManager.GetMoveFound());
+			}
 		}
         
 		public override bool AnimateMoving()
