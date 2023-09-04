@@ -55,7 +55,6 @@ namespace Chess {
 		// Make a move on the board
 		// The inSearch parameter controls whether this move should be recorded in the game history (for detecting three-fold repetition)
 		public void MakeMove (Move move, bool inSearch = false) {
-			uint oldEnPassantFile = (currentGameState >> 4) & 15;
 			uint originalCastleState = currentGameState & 15;
 			uint newCastleState = originalCastleState;
 			currentGameState = 0;
@@ -79,59 +78,30 @@ namespace Chess {
 			}
 
 			// Move pieces in piece lists
-			if (movePieceType == Piece.King) {
-				KingSquare[ColourToMoveIndex] = moveTo;
-				newCastleState &= (WhiteToMove) ? whiteCastleMask : blackCastleMask;
-			} else {
-				GetPieceList (movePieceType, ColourToMoveIndex).MovePiece (moveFrom, moveTo);
-			}
+			MovePiece(moveFrom, moveTo, ref newCastleState);
 
 			int pieceOnTargetSquare = movePiece;
-
 			// Handle promotion
-			if (isPromotion) {
-				int promoteType = 0;
-				switch (moveFlag) {
-					case Move.Flag.PromoteToQueen:
-						promoteType = Piece.Queen;
-						queens[ColourToMoveIndex].AddPieceAtSquare (moveTo);
-						break;
-					case Move.Flag.PromoteToKnight:
-						promoteType = Piece.Knight;
-						knights[ColourToMoveIndex].AddPieceAtSquare (moveTo);
-						break;
-
-				}
-				pieceOnTargetSquare = promoteType | ColourToMove;
-				pawns[ColourToMoveIndex].RemovePieceAtSquare (moveTo);
+			if (isPromotion)
+			{
+				pieceOnTargetSquare = Promotion(moveFlag, moveTo);
 			} else {
 				// Handle other special moves (en-passant, and castling)
 				switch (moveFlag) {
 					case Move.Flag.EnPassantCapture:
 						int epPawnSquare = moveTo + ((ColourToMove == Piece.White) ? -8 : 8);
 						currentGameState |= (ushort) (Square[epPawnSquare] << 8); // add pawn as capture type
-						Square[epPawnSquare] = 0; // clear ep capture square
-						pawns[opponentColourIndex].RemovePieceAtSquare (epPawnSquare);
-						ZobristKey ^= Zobrist.piecesArray[Piece.Pawn, opponentColourIndex, epPawnSquare];
+						RemovePieceAt(epPawnSquare);
 						break;
 					case Move.Flag.Castling:
-						bool kingside = moveTo == BoardRepresentation.g1 || moveTo == BoardRepresentation.g8;
-						int castlingRookFromIndex = (kingside) ? moveTo + 1 : moveTo - 2;
-						int castlingRookToIndex = (kingside) ? moveTo - 1 : moveTo + 1;
-
-						Square[castlingRookFromIndex] = Piece.None;
-						Square[castlingRookToIndex] = Piece.Rook | ColourToMove;
-
-						rooks[ColourToMoveIndex].MovePiece (castlingRookFromIndex, castlingRookToIndex);
-						ZobristKey ^= Zobrist.piecesArray[Piece.Rook, ColourToMoveIndex, castlingRookFromIndex];
-						ZobristKey ^= Zobrist.piecesArray[Piece.Rook, ColourToMoveIndex, castlingRookToIndex];
+						Castling(moveTo);
 						break;
 				}
 			}
 
 			// Update the board representation:
 			Square[moveTo] = pieceOnTargetSquare;
-			Square[moveFrom] = 0;
+			Square[moveFrom] = Piece.None;
 
 			// Pawn has moved two forwards, mark file with en-passant flag
 			if (moveFlag == Move.Flag.PawnTwoForward) {
@@ -159,6 +129,7 @@ namespace Chess {
 			ZobristKey ^= Zobrist.piecesArray[movePieceType, ColourToMoveIndex, moveFrom];
 			ZobristKey ^= Zobrist.piecesArray[Piece.PieceType (pieceOnTargetSquare), ColourToMoveIndex, moveTo];
 
+			uint oldEnPassantFile = (currentGameState >> 4) & 15;
 			if (oldEnPassantFile != 0)
 				ZobristKey ^= Zobrist.enPassantFile[oldEnPassantFile];
 
@@ -185,12 +156,16 @@ namespace Chess {
 			}
 		}
 
-		void RemovePieceAt(int square)
+		void RemovePieceAt(int square, bool externalCall = false)
 		{
 			int capturedPieceType = Piece.PieceType (Square[square]);
 			int opponentColourIndex = 1 - ColourToMoveIndex;
             ZobristKey ^= Zobrist.piecesArray[capturedPieceType, opponentColourIndex, square];
             GetPieceList (capturedPieceType, opponentColourIndex).RemovePieceAtSquare (square);
+            if (externalCall)
+            {
+	            Square[square] = Piece.None;
+            }
 		}
 
 		void MovePiece(int moveFrom, int moveTo, ref uint newCastleState)
@@ -204,8 +179,9 @@ namespace Chess {
 				GetPieceList (movePieceType, ColourToMoveIndex).MovePiece (moveFrom, moveTo);
 			}
 		}
+        
 
-		int Promotion(int moveFlag, int moveFrom, int moveTo)
+		int Promotion(int moveFlag, int moveTo)
 		{
 			int promoteType = 0;
 			switch (moveFlag) {
@@ -223,6 +199,21 @@ namespace Chess {
 			pawns[ColourToMoveIndex].RemovePieceAtSquare (moveTo);
 			return pieceOnTargetSquare;
 		}
+
+		void Castling(int moveTo)
+		{
+			bool kingside = moveTo == BoardRepresentation.g1 || moveTo == BoardRepresentation.g8;
+			int castlingRookFromIndex = (kingside) ? moveTo + 1 : moveTo - 2;
+			int castlingRookToIndex = (kingside) ? moveTo - 1 : moveTo + 1;
+
+			Square[castlingRookFromIndex] = Piece.None;
+			Square[castlingRookToIndex] = Piece.Rook | ColourToMove;
+
+			rooks[ColourToMoveIndex].MovePiece (castlingRookFromIndex, castlingRookToIndex);
+			ZobristKey ^= Zobrist.piecesArray[Piece.Rook, ColourToMoveIndex, castlingRookFromIndex];
+			ZobristKey ^= Zobrist.piecesArray[Piece.Rook, ColourToMoveIndex, castlingRookToIndex];
+		}
+        
 
 		// Undo a move previously made on the board
 		public void UnmakeMove (Move move, bool inSearch = false) {
