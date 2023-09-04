@@ -8,11 +8,13 @@ namespace Chess.Game
         public static event Action OnPositionLoaded;
         public static event Action<Move> OnMoveMade;
         public static event Action AfterMoveMade;
+        public static event Action OnBoardUpdate; 
         public static event Action ToggleAIAssistanceSearch;  
 
         public static void OnMoveChosen(Move move)
         {
             OnMoveMade?.Invoke(move);
+            OnBoardUpdate?.Invoke();
             AfterMoveMade?.Invoke();
         }
 

@@ -299,8 +299,6 @@
 			moves.Add (new Move (fromSquare, toSquare, Move.Flag.PromoteToQueen));
 			if (promotionsToGenerate == PromotionMode.All) {
 				moves.Add (new Move (fromSquare, toSquare, Move.Flag.PromoteToKnight));
-				moves.Add (new Move (fromSquare, toSquare, Move.Flag.PromoteToRook));
-				moves.Add (new Move (fromSquare, toSquare, Move.Flag.PromoteToBishop));
 			} else if (promotionsToGenerate == PromotionMode.QueenAndKnight) {
 				moves.Add (new Move (fromSquare, toSquare, Move.Flag.PromoteToKnight));
 			}

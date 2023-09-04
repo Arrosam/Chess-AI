@@ -3,7 +3,7 @@
 namespace Chess {
 	using System.Collections.Generic;
 
-	public class Board {
+	public class Board : MonoBehaviour{
 
 		public const int WhiteIndex = 0;
 		public const int BlackIndex = 1;
@@ -40,9 +40,9 @@ namespace Chess {
 
 		PieceList[] allPieceLists;
 
-		const uint whiteCastleKingsideMask = 0b1111111111111110;
+		const uint whiteCastleKingsideMask =  0b1111111111111110;
 		const uint whiteCastleQueensideMask = 0b1111111111111101;
-		const uint blackCastleKingsideMask = 0b1111111111111011;
+		const uint blackCastleKingsideMask =  0b1111111111111011;
 		const uint blackCastleQueensideMask = 0b1111111111110111;
 
 		const uint whiteCastleMask = whiteCastleKingsideMask & whiteCastleQueensideMask;
@@ -72,11 +72,10 @@ namespace Chess {
 			bool isPromotion = move.IsPromotion;
 			bool isEnPassant = moveFlag == Move.Flag.EnPassantCapture;
 
-			// Handle captures
+			// Handle non-En Passant captures
 			currentGameState |= (ushort) (capturedPieceType << 8);
 			if (capturedPieceType != 0 && !isEnPassant) {
-				ZobristKey ^= Zobrist.piecesArray[capturedPieceType, opponentColourIndex, moveTo];
-				GetPieceList (capturedPieceType, opponentColourIndex).RemovePieceAtSquare (moveTo);
+				RemovePieceAt(moveTo);
 			}
 
 			// Move pieces in piece lists
@@ -96,14 +95,6 @@ namespace Chess {
 					case Move.Flag.PromoteToQueen:
 						promoteType = Piece.Queen;
 						queens[ColourToMoveIndex].AddPieceAtSquare (moveTo);
-						break;
-					case Move.Flag.PromoteToRook:
-						promoteType = Piece.Rook;
-						rooks[ColourToMoveIndex].AddPieceAtSquare (moveTo);
-						break;
-					case Move.Flag.PromoteToBishop:
-						promoteType = Piece.Bishop;
-						bishops[ColourToMoveIndex].AddPieceAtSquare (moveTo);
 						break;
 					case Move.Flag.PromoteToKnight:
 						promoteType = Piece.Knight;
@@ -192,7 +183,45 @@ namespace Chess {
 					RepetitionPositionHistory.Push (ZobristKey);
 				}
 			}
+		}
 
+		void RemovePieceAt(int square)
+		{
+			int capturedPieceType = Piece.PieceType (Square[square]);
+			int opponentColourIndex = 1 - ColourToMoveIndex;
+            ZobristKey ^= Zobrist.piecesArray[capturedPieceType, opponentColourIndex, square];
+            GetPieceList (capturedPieceType, opponentColourIndex).RemovePieceAtSquare (square);
+		}
+
+		void MovePiece(int moveFrom, int moveTo, ref uint newCastleState)
+		{
+			int movePiece = Square[moveFrom];
+			int movePieceType = Piece.PieceType (movePiece);
+			if (movePieceType == Piece.King) {
+				KingSquare[ColourToMoveIndex] = moveTo;
+				newCastleState &= (WhiteToMove) ? whiteCastleMask : blackCastleMask;
+			} else {
+				GetPieceList (movePieceType, ColourToMoveIndex).MovePiece (moveFrom, moveTo);
+			}
+		}
+
+		int Promotion(int moveFlag, int moveFrom, int moveTo)
+		{
+			int promoteType = 0;
+			switch (moveFlag) {
+				case Move.Flag.PromoteToQueen:
+					promoteType = Piece.Queen;
+					queens[ColourToMoveIndex].AddPieceAtSquare (moveTo);
+					break;
+				case Move.Flag.PromoteToKnight:
+					promoteType = Piece.Knight;
+					knights[ColourToMoveIndex].AddPieceAtSquare (moveTo);
+					break;
+
+			}
+			int pieceOnTargetSquare = promoteType | ColourToMove;
+			pawns[ColourToMoveIndex].RemovePieceAtSquare (moveTo);
+			return pieceOnTargetSquare;
 		}
 
 		// Undo a move previously made on the board
@@ -254,12 +283,6 @@ namespace Chess {
 						break;
 					case Move.Flag.PromoteToKnight:
 						knights[ColourToMoveIndex].RemovePieceAtSquare (movedTo);
-						break;
-					case Move.Flag.PromoteToRook:
-						rooks[ColourToMoveIndex].RemovePieceAtSquare (movedTo);
-						break;
-					case Move.Flag.PromoteToBishop:
-						bishops[ColourToMoveIndex].RemovePieceAtSquare (movedTo);
 						break;
 				}
 			} else if (isEnPassant) { // ep cature: put captured pawn back on right square

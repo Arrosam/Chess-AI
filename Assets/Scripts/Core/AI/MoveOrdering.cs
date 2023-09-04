@@ -45,10 +45,6 @@ namespace Chess {
 						score += Evaluation.queenValue;
 					} else if (flag == Move.Flag.PromoteToKnight) {
 						score += Evaluation.knightValue;
-					} else if (flag == Move.Flag.PromoteToRook) {
-						score += Evaluation.rookValue;
-					} else if (flag == Move.Flag.PromoteToBishop) {
-						score += Evaluation.bishopValue;
 					}
 				} else {
 					// Penalize moving piece to a square attacked by opponent pawn

@@ -6,6 +6,9 @@ bit 0-5: from square (0 to 63)
 bit 6-11: to square (0 to 63)
 bit 12-15: flag
 */
+
+using UnityEngine;
+
 namespace Chess {
 
 	public readonly struct Move {
@@ -16,8 +19,6 @@ namespace Chess {
 			public const int Castling = 2;
 			public const int PromoteToQueen = 3;
 			public const int PromoteToKnight = 4;
-			public const int PromoteToRook = 5;
-			public const int PromoteToBishop = 6;
 			public const int PawnTwoForward = 7;
 		}
 
@@ -54,7 +55,7 @@ namespace Chess {
 		public bool IsPromotion {
 			get {
 				int flag = MoveFlag;
-				return flag == Flag.PromoteToQueen || flag == Flag.PromoteToRook || flag == Flag.PromoteToKnight || flag == Flag.PromoteToBishop;
+				return flag == Flag.PromoteToQueen || flag == Flag.PromoteToKnight;
 			}
 		}
 
@@ -67,12 +68,8 @@ namespace Chess {
 		public int PromotionPieceType {
 			get {
 				switch (MoveFlag) {
-					case Flag.PromoteToRook:
-						return Piece.Rook;
 					case Flag.PromoteToKnight:
 						return Piece.Knight;
-					case Flag.PromoteToBishop:
-						return Piece.Bishop;
 					case Flag.PromoteToQueen:
 						return Piece.Queen;
 					default:
