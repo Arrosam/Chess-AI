@@ -1,9 +1,10 @@
-﻿using UnityEngine;
+﻿using Core.Skill;
+using UnityEngine;
 
 namespace Chess {
 	using System.Collections.Generic;
 
-	public class Board : MonoBehaviour{
+	public class Board{
 
 		public const int WhiteIndex = 0;
 		public const int BlackIndex = 1;
@@ -12,6 +13,7 @@ namespace Chess {
 		// Piece code is defined as piecetype | colour code
 		public int[] Square;
 		public Status[] StatusSquare;
+		private PieceHPSettingManager _pieceHpSetting;
 
 		public bool WhiteToMove;
 		public int ColourToMove;
@@ -70,6 +72,7 @@ namespace Chess {
 			int moveFlag = move.MoveFlag;
 			bool isPromotion = move.IsPromotion;
 			bool isEnPassant = moveFlag == Move.Flag.EnPassantCapture;
+			Status statusOnTargetSquare = StatusSquare[moveFrom];
 
 			// Handle non-En Passant captures
 			currentGameState |= (ushort) (capturedPieceType << 8);
@@ -102,6 +105,8 @@ namespace Chess {
 			// Update the board representation:
 			Square[moveTo] = pieceOnTargetSquare;
 			Square[moveFrom] = Piece.None;
+			StatusSquare[moveTo] = statusOnTargetSquare;
+			StatusSquare[moveFrom] = Status.None;
 
 			// Pawn has moved two forwards, mark file with en-passant flag
 			if (moveFlag == Move.Flag.PawnTwoForward) {
@@ -165,6 +170,7 @@ namespace Chess {
             if (externalCall)
             {
 	            Square[square] = Piece.None;
+	            StatusSquare[square] = Status.None;
             }
 		}
 
@@ -179,7 +185,7 @@ namespace Chess {
 				GetPieceList (movePieceType, ColourToMoveIndex).MovePiece (moveFrom, moveTo);
 			}
 		}
-        
+		
 
 		int Promotion(int moveFlag, int moveTo)
 		{
@@ -327,9 +333,10 @@ namespace Chess {
 			for (int squareIndex = 0; squareIndex < 64; squareIndex++) {
 				int piece = loadedPosition.squares[squareIndex];
 				Square[squareIndex] = piece;
-
+				
+				int pieceType = Piece.PieceType (piece);
+				StatusSquare[squareIndex] = new Status(_pieceHpSetting.GetPieceInitialHP(pieceType));
 				if (piece != Piece.None) {
-					int pieceType = Piece.PieceType (piece);
 					int pieceColourIndex = (Piece.IsColour (piece, Piece.White)) ? WhiteIndex : BlackIndex;
 					if (Piece.IsSlidingPiece (piece)) {
 						if (pieceType == Piece.Queen) {
@@ -370,12 +377,14 @@ namespace Chess {
 
 		void Initialize () {
 			Square = new int[64];
+			StatusSquare = new Status[64];
 			KingSquare = new int[2];
 
 			gameStateHistory = new Stack<uint> ();
 			ZobristKey = 0;
 			RepetitionPositionHistory = new Stack<ulong> ();
 			plyCount = 0;
+			_pieceHpSetting = PieceHPSettingManager.instance;
 
 			knights = new PieceList[] { new PieceList (10), new PieceList (10) };
 			pawns = new PieceList[] { new PieceList (8), new PieceList (8) };

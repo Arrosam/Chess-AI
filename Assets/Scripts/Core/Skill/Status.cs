@@ -1,33 +1,33 @@
-using System.Collections;
+using System;
 using System.Collections.Generic;
-using UnityEngine;
+using Unity.VisualScripting;
 
-public class Status
+namespace Core.Skill
 {
-    private float HP;
-    private LinkedList<Effect> Effects;
-    public Status(float initialHP)
+    public class Status
     {
-        HP = initialHP;
-    }
+        public static Status None = new Status(0);
+        private float HP;
+        private LinkedList<Effect> Effects;
+        private event Action<Event> eventBus;
+        public Status(float initialHP)
+        {
+            HP = initialHP;
+        }
 
-    public void ChangeHP(float delta)
-    {
-        HP += delta;
-    }
+        public void ChangeHP(float delta)
+        {
+            HP += delta;
+        }
 
-    public void AddEffect(Effect effect)
-    {
-        Effects.AddLast(effect);
-    }
+        public float GetHP()
+        {
+            return HP;
+        }
 
-    public float GetHP()
-    {
-        return HP;
-    }
-
-    public void EffectEvent(Event triggeredEvent)
-    {
-        
+        public void EffectEvent(Event triggeredEvent)
+        {
+            eventBus?.Invoke(triggeredEvent);
+        }
     }
 }
