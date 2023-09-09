@@ -6,7 +6,6 @@ namespace Core.Skill
 {
     public class Status
     {
-        public static Status None = new Status(0);
         private float HP;
         private LinkedList<Effect> Effects;
         private event Action<Event> eventBus;

@@ -11,9 +11,10 @@ namespace Chess {
 
 		// Stores piece code for each square on the board.
 		// Piece code is defined as piecetype | colour code
-		public int[] Square;
-		public Status[] StatusSquare;
+		public int[] square;
+		public Status[] statusSquare;
 		private PieceHPSettingManager _pieceHpSetting;
+		private Status _noneStatus;
 
 		public bool WhiteToMove;
 		public int ColourToMove;
@@ -65,14 +66,14 @@ namespace Chess {
 			int moveFrom = move.StartSquare;
 			int moveTo = move.TargetSquare;
 
-			int capturedPieceType = Piece.PieceType (Square[moveTo]);
-			int movePiece = Square[moveFrom];
+			int capturedPieceType = Piece.PieceType (square[moveTo]);
+			int movePiece = square[moveFrom];
 			int movePieceType = Piece.PieceType (movePiece);
 
 			int moveFlag = move.MoveFlag;
 			bool isPromotion = move.IsPromotion;
 			bool isEnPassant = moveFlag == Move.Flag.EnPassantCapture;
-			Status statusOnTargetSquare = StatusSquare[moveFrom];
+			Status statusOnTargetSquare = statusSquare[moveFrom];
 
 			// Handle non-En Passant captures
 			currentGameState |= (ushort) (capturedPieceType << 8);
@@ -93,7 +94,7 @@ namespace Chess {
 				switch (moveFlag) {
 					case Move.Flag.EnPassantCapture:
 						int epPawnSquare = moveTo + ((ColourToMove == Piece.White) ? -8 : 8);
-						currentGameState |= (ushort) (Square[epPawnSquare] << 8); // add pawn as capture type
+						currentGameState |= (ushort) (square[epPawnSquare] << 8); // add pawn as capture type
 						RemovePieceAt(epPawnSquare);
 						break;
 					case Move.Flag.Castling:
@@ -103,10 +104,10 @@ namespace Chess {
 			}
 
 			// Update the board representation:
-			Square[moveTo] = pieceOnTargetSquare;
-			Square[moveFrom] = Piece.None;
-			StatusSquare[moveTo] = statusOnTargetSquare;
-			StatusSquare[moveFrom] = Status.None;
+			square[moveTo] = pieceOnTargetSquare;
+			square[moveFrom] = Piece.None;
+			statusSquare[moveTo] = statusOnTargetSquare;
+			statusSquare[moveFrom] =  new Status(_pieceHpSetting.GetPieceInitialHP(Piece.None));
 
 			// Pawn has moved two forwards, mark file with en-passant flag
 			if (moveFlag == Move.Flag.PawnTwoForward) {
@@ -163,20 +164,20 @@ namespace Chess {
 
 		void RemovePieceAt(int square, bool externalCall = false)
 		{
-			int capturedPieceType = Piece.PieceType (Square[square]);
+			int capturedPieceType = Piece.PieceType (this.square[square]);
 			int opponentColourIndex = 1 - ColourToMoveIndex;
             ZobristKey ^= Zobrist.piecesArray[capturedPieceType, opponentColourIndex, square];
             GetPieceList (capturedPieceType, opponentColourIndex).RemovePieceAtSquare (square);
             if (externalCall)
             {
-	            Square[square] = Piece.None;
-	            StatusSquare[square] = Status.None;
+	            this.square[square] = Piece.None;
+	            statusSquare[square] = new Status(_pieceHpSetting.GetPieceInitialHP(Piece.None));
             }
 		}
 
 		void MovePiece(int moveFrom, int moveTo, ref uint newCastleState)
 		{
-			int movePiece = Square[moveFrom];
+			int movePiece = square[moveFrom];
 			int movePieceType = Piece.PieceType (movePiece);
 			if (movePieceType == Piece.King) {
 				KingSquare[ColourToMoveIndex] = moveTo;
@@ -212,8 +213,8 @@ namespace Chess {
 			int castlingRookFromIndex = (kingside) ? moveTo + 1 : moveTo - 2;
 			int castlingRookToIndex = (kingside) ? moveTo - 1 : moveTo + 1;
 
-			Square[castlingRookFromIndex] = Piece.None;
-			Square[castlingRookToIndex] = Piece.Rook | ColourToMove;
+			square[castlingRookFromIndex] = Piece.None;
+			square[castlingRookToIndex] = Piece.Rook | ColourToMove;
 
 			rooks[ColourToMoveIndex].MovePiece (castlingRookFromIndex, castlingRookToIndex);
 			ZobristKey ^= Zobrist.piecesArray[Piece.Rook, ColourToMoveIndex, castlingRookFromIndex];
@@ -243,7 +244,7 @@ namespace Chess {
 			bool isEnPassant = moveFlags == Move.Flag.EnPassantCapture;
 			bool isPromotion = move.IsPromotion;
 
-			int toSquarePieceType = Piece.PieceType (Square[movedTo]);
+			int toSquarePieceType = Piece.PieceType (square[movedTo]);
 			int movedPieceType = (isPromotion) ? Piece.Pawn : toSquarePieceType;
 
 			// Update zobrist key with new piece position and side to move
@@ -269,8 +270,8 @@ namespace Chess {
 			}
 
 			// put back moved piece
-			Square[movedFrom] = movedPieceType | ColourToMove; // note that if move was a pawn promotion, this will put the promoted piece back instead of the pawn. Handled in special move switch
-			Square[movedTo] = capturedPiece; // will be 0 if no piece was captured
+			square[movedFrom] = movedPieceType | ColourToMove; // note that if move was a pawn promotion, this will put the promoted piece back instead of the pawn. Handled in special move switch
+			square[movedTo] = capturedPiece; // will be 0 if no piece was captured
 
 			if (isPromotion) {
 				pawns[ColourToMoveIndex].AddPieceAtSquare (movedFrom);
@@ -284,8 +285,8 @@ namespace Chess {
 				}
 			} else if (isEnPassant) { // ep cature: put captured pawn back on right square
 				int epIndex = movedTo + ((ColourToMove == Piece.White) ? -8 : 8);
-				Square[movedTo] = 0;
-				Square[epIndex] = (int) capturedPiece;
+				square[movedTo] = 0;
+				square[epIndex] = (int) capturedPiece;
 				pawns[opponentColourIndex].AddPieceAtSquare (epIndex);
 				ZobristKey ^= Zobrist.piecesArray[Piece.Pawn, opponentColourIndex, epIndex];
 			} else if (moveFlags == Move.Flag.Castling) { // castles: move rook back to starting square
@@ -294,8 +295,8 @@ namespace Chess {
 				int castlingRookFromIndex = (kingside) ? movedTo + 1 : movedTo - 2;
 				int castlingRookToIndex = (kingside) ? movedTo - 1 : movedTo + 1;
 
-				Square[castlingRookToIndex] = 0;
-				Square[castlingRookFromIndex] = Piece.Rook | ColourToMove;
+				square[castlingRookToIndex] = 0;
+				square[castlingRookFromIndex] = Piece.Rook | ColourToMove;
 
 				rooks[ColourToMoveIndex].MovePiece (castlingRookToIndex, castlingRookFromIndex);
 				ZobristKey ^= Zobrist.piecesArray[Piece.Rook, ColourToMoveIndex, castlingRookFromIndex];
@@ -332,10 +333,10 @@ namespace Chess {
 			// Load pieces into board array and piece lists
 			for (int squareIndex = 0; squareIndex < 64; squareIndex++) {
 				int piece = loadedPosition.squares[squareIndex];
-				Square[squareIndex] = piece;
+				square[squareIndex] = piece;
 				
 				int pieceType = Piece.PieceType (piece);
-				StatusSquare[squareIndex] = new Status(_pieceHpSetting.GetPieceInitialHP(pieceType));
+				statusSquare[squareIndex] = new Status(_pieceHpSetting.GetPieceInitialHP(pieceType));
 				if (piece != Piece.None) {
 					int pieceColourIndex = (Piece.IsColour (piece, Piece.White)) ? WhiteIndex : BlackIndex;
 					if (Piece.IsSlidingPiece (piece)) {
@@ -376,8 +377,8 @@ namespace Chess {
 		}
 
 		void Initialize () {
-			Square = new int[64];
-			StatusSquare = new Status[64];
+			square = new int[64];
+			statusSquare = new Status[64];
 			KingSquare = new int[2];
 
 			gameStateHistory = new Stack<uint> ();

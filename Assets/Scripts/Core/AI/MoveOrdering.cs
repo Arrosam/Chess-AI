@@ -29,8 +29,8 @@ namespace Chess {
 
 			for (int i = 0; i < moves.Count; i++) {
 				int score = 0;
-				int movePieceType = Piece.PieceType (board.Square[moves[i].StartSquare]);
-				int capturePieceType = Piece.PieceType (board.Square[moves[i].TargetSquare]);
+				int movePieceType = Piece.PieceType (board.square[moves[i].StartSquare]);
+				int capturePieceType = Piece.PieceType (board.square[moves[i].TargetSquare]);
 				int flag = moves[i].MoveFlag;
 
 				if (capturePieceType != Piece.None) {

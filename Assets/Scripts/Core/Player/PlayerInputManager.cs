@@ -62,7 +62,7 @@ namespace Chess.Game
 					}
 				} else {
 					int targetIndex = BoardRepresentation.IndexFromCoord (targetSquare.fileIndex, targetSquare.rankIndex);
-					if (Piece.IsColour (_board.Square[targetIndex], _board.ColourToMove) && _board.Square[targetIndex] != 0) {
+					if (Piece.IsColour (_board.square[targetIndex], _board.ColourToMove) && _board.square[targetIndex] != 0) {
 						CancelPieceSelection ();
 						HandlePieceSelection (mousePos);
 					} else {
@@ -126,7 +126,7 @@ namespace Chess.Game
 				if (_boardUI.TryGetSquareUnderMouse (mousePos, out _selectedPieceSquare)) {
 					int index = BoardRepresentation.IndexFromCoord (_selectedPieceSquare);
 					// If square contains a piece, select that piece for dragging
-					if (Piece.IsColour (_board.Square[index], _board.ColourToMove)) {
+					if (Piece.IsColour (_board.square[index], _board.ColourToMove)) {
 						_boardUI.HighlightLegalMoves (_board, _selectedPieceSquare);
 						_boardUI.SelectSquare (_selectedPieceSquare);
 						_currentState = InputState.DraggingPiece;

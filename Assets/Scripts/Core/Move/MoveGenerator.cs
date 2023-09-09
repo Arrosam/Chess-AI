@@ -78,7 +78,7 @@
 		void GenerateKingMoves () {
 			for (int i = 0; i < kingMoves[friendlyKingSquare].Length; i++) {
 				int targetSquare = kingMoves[friendlyKingSquare][i];
-				int pieceOnTargetSquare = board.Square[targetSquare];
+				int pieceOnTargetSquare = board.square[targetSquare];
 
 				// Skip squares occupied by friendly pieces
 				if (Piece.IsColour (pieceOnTargetSquare, friendlyColour)) {
@@ -103,7 +103,7 @@
 						// Castle kingside
 						if ((targetSquare == f1 || targetSquare == f8) && HasKingsideCastleRight) {
 							int castleKingsideSquare = targetSquare + 1;
-							if (board.Square[castleKingsideSquare] == Piece.None) {
+							if (board.square[castleKingsideSquare] == Piece.None) {
 								if (!SquareIsAttacked (castleKingsideSquare)) {
 									moves.Add (new Move (friendlyKingSquare, castleKingsideSquare, Move.Flag.Castling));
 								}
@@ -112,7 +112,7 @@
 						// Castle queenside
 						else if ((targetSquare == d1 || targetSquare == d8) && HasQueensideCastleRight) {
 							int castleQueensideSquare = targetSquare - 1;
-							if (board.Square[castleQueensideSquare] == Piece.None && board.Square[castleQueensideSquare - 1] == Piece.None) {
+							if (board.square[castleQueensideSquare] == Piece.None && board.square[castleQueensideSquare - 1] == Piece.None) {
 								if (!SquareIsAttacked (castleQueensideSquare)) {
 									moves.Add (new Move (friendlyKingSquare, castleQueensideSquare, Move.Flag.Castling));
 								}
@@ -159,7 +159,7 @@
 
 				for (int n = 0; n < numSquaresToEdge[startSquare][directionIndex]; n++) {
 					int targetSquare = startSquare + currentDirOffset * (n + 1);
-					int targetSquarePiece = board.Square[targetSquare];
+					int targetSquarePiece = board.square[targetSquare];
 
 					// Blocked by friendly piece, so stop looking in this direction
 					if (Piece.IsColour (targetSquarePiece, friendlyColour)) {
@@ -195,7 +195,7 @@
 
 				for (int knightMoveIndex = 0; knightMoveIndex < knightMoves[startSquare].Length; knightMoveIndex++) {
 					int targetSquare = knightMoves[startSquare][knightMoveIndex];
-					int targetSquarePiece = board.Square[targetSquare];
+					int targetSquarePiece = board.square[targetSquare];
 					bool isCapture = Piece.IsColour (targetSquarePiece, opponentColour);
 					if (genQuiets || isCapture) {
 						// Skip if square contains friendly piece, or if in check and knight is not interposing/capturing checking piece
@@ -230,7 +230,7 @@
 					int squareOneForward = startSquare + pawnOffset;
 
 					// Square ahead of pawn is empty: forward moves
-					if (board.Square[squareOneForward] == Piece.None) {
+					if (board.square[squareOneForward] == Piece.None) {
 						// Pawn not pinned, or is moving along line of pin
 						if (!IsPinned (startSquare) || IsMovingAlongRay (pawnOffset, startSquare, friendlyKingSquare)) {
 							// Not in check, or pawn is interposing checking piece
@@ -245,7 +245,7 @@
 							// Is on starting square (so can move two forward if not blocked)
 							if (rank == startRank) {
 								int squareTwoForward = squareOneForward + pawnOffset;
-								if (board.Square[squareTwoForward] == Piece.None) {
+								if (board.square[squareTwoForward] == Piece.None) {
 									// Not in check, or pawn is interposing checking piece
 									if (!inCheck || SquareIsInCheckRay (squareTwoForward)) {
 										moves.Add (new Move (startSquare, squareTwoForward, Move.Flag.PawnTwoForward));
@@ -263,7 +263,7 @@
 						// move in direction friendly pawns attack to get square from which enemy pawn would attack
 						int pawnCaptureDir = directionOffsets[pawnAttackDirections[friendlyColourIndex][j]];
 						int targetSquare = startSquare + pawnCaptureDir;
-						int targetPiece = board.Square[targetSquare];
+						int targetPiece = board.square[targetSquare];
 
 						// If piece is pinned, and the square it wants to move to is not on same line as the pin, then skip this direction
 						if (IsPinned (startSquare) && !IsMovingAlongRay (pawnCaptureDir, friendlyKingSquare, startSquare)) {
@@ -361,7 +361,7 @@
 				int currentDirOffset = directionOffsets[directionIndex];
 				for (int n = 0; n < numSquaresToEdge[startSquare][directionIndex]; n++) {
 					int targetSquare = startSquare + currentDirOffset * (n + 1);
-					int targetSquarePiece = board.Square[targetSquare];
+					int targetSquarePiece = board.square[targetSquare];
 					opponentSlidingAttackMap |= 1ul << targetSquare;
 					if (targetSquare != friendlyKingSquare) {
 						if (targetSquarePiece != Piece.None) {
@@ -394,7 +394,7 @@
 				for (int i = 0; i < n; i++) {
 					int squareIndex = friendlyKingSquare + directionOffset * (i + 1);
 					rayMask |= 1ul << squareIndex;
-					int piece = board.Square[squareIndex];
+					int piece = board.square[squareIndex];
 
 					// This square contains a piece
 					if (piece != Piece.None) {
@@ -487,9 +487,9 @@
 
 		bool InCheckAfterEnPassant (int startSquare, int targetSquare, int epCapturedPawnSquare) {
 			// Update board to reflect en-passant capture
-			board.Square[targetSquare] = board.Square[startSquare];
-			board.Square[startSquare] = Piece.None;
-			board.Square[epCapturedPawnSquare] = Piece.None;
+			board.square[targetSquare] = board.square[startSquare];
+			board.square[startSquare] = Piece.None;
+			board.square[epCapturedPawnSquare] = Piece.None;
 
 			bool inCheckAfterEpCapture = false;
 			if (SquareAttackedAfterEPCapture (epCapturedPawnSquare, startSquare)) {
@@ -497,9 +497,9 @@
 			}
 
 			// Undo change to board
-			board.Square[targetSquare] = Piece.None;
-			board.Square[startSquare] = Piece.Pawn | friendlyColour;
-			board.Square[epCapturedPawnSquare] = Piece.Pawn | opponentColour;
+			board.square[targetSquare] = Piece.None;
+			board.square[startSquare] = Piece.Pawn | friendlyColour;
+			board.square[epCapturedPawnSquare] = Piece.Pawn | opponentColour;
 			return inCheckAfterEpCapture;
 		}
 
@@ -512,7 +512,7 @@
 			int dirIndex = (epCaptureSquare < friendlyKingSquare) ? 2 : 3;
 			for (int i = 0; i < numSquaresToEdge[friendlyKingSquare][dirIndex]; i++) {
 				int squareIndex = friendlyKingSquare + directionOffsets[dirIndex] * (i + 1);
-				int piece = board.Square[squareIndex];
+				int piece = board.square[squareIndex];
 				if (piece != Piece.None) {
 					// Friendly piece is blocking view of this square from the enemy.
 					if (Piece.IsColour (piece, friendlyColour)) {
@@ -535,7 +535,7 @@
 				// Check if square exists diagonal to friendly king from which enemy pawn could be attacking it
 				if (numSquaresToEdge[friendlyKingSquare][pawnAttackDirections[friendlyColourIndex][i]] > 0) {
 					// move in direction friendly pawns attack to get square from which enemy pawn would attack
-					int piece = board.Square[friendlyKingSquare + directionOffsets[pawnAttackDirections[friendlyColourIndex][i]]];
+					int piece = board.square[friendlyKingSquare + directionOffsets[pawnAttackDirections[friendlyColourIndex][i]]];
 					if (piece == (Piece.Pawn | opponentColour)) // is enemy pawn
 					{
 						return true;

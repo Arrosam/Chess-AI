@@ -10,15 +10,11 @@ namespace Chess
         public GameBoardManager gameBoardManager;
         private Board _board;
         private Status[] _statusArray;
-
-        private void Start()
-        {
-            _board = gameBoardManager.Board;
-            _statusArray = _board.StatusSquare;
-        }
-
+        
         public void CheckStatus()
         {
+            _board = gameBoardManager.Board;
+            _statusArray = _board.statusSquare;
             if (_board is null)
             {
                 Debug.Log("Board is void");
@@ -29,15 +25,16 @@ namespace Chess
                 Debug.Log("Status Square is void");
                 return;
             }
+            string stringBuilder = "";
             for (int i = 0; i < 8; i++)
             {
-                string stringBuilder = "";
                 for (int j = 0; j < 8; j++)
                 {
-                    stringBuilder += _statusArray[i*8+j].GetHP();
+                    stringBuilder += _statusArray[i*8+j].GetHP() + " ";
                 }
-                Debug.Log(stringBuilder);
+                stringBuilder += "\n";
             }
+            Debug.Log(stringBuilder);
         }
     }
 }

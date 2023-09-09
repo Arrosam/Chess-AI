@@ -65,7 +65,7 @@
 				int numEmptyFiles = 0;
 				for (int file = 0; file < 8; file++) {
 					int i = rank * 8 + file;
-					int piece = board.Square[i];
+					int piece = board.square[i];
 					if (piece != 0) {
 						if (numEmptyFiles != 0) {
 							fen += numEmptyFiles;

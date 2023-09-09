@@ -160,7 +160,7 @@ namespace Chess.Game {
 			for (int rank = 0; rank < 8; rank++) {
 				for (int file = 0; file < 8; file++) {
 					Coord coord = new Coord (file, rank);
-					int piece = GameBoardManager.Instance.Board.Square
+					int piece = GameBoardManager.Instance.Board.square
 						[BoardRepresentation.IndexFromCoord (coord.fileIndex, coord.rankIndex)];
 					squarePieceRenderers[file, rank].sprite = pieceTheme.GetPieceSprite (piece);
 					squarePieceRenderers[file, rank].transform.position = PositionFromCoord (file, rank, pieceDepth);

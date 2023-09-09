@@ -79,9 +79,9 @@ namespace Chess {
 			ulong zobristKey = 0;
 
 			for (int squareIndex = 0; squareIndex < 64; squareIndex++) {
-				if (board.Square[squareIndex] != 0) {
-					int pieceType = Piece.PieceType (board.Square[squareIndex]);
-					int pieceColour = Piece.Colour (board.Square[squareIndex]);
+				if (board.square[squareIndex] != 0) {
+					int pieceType = Piece.PieceType (board.square[squareIndex]);
+					int pieceColour = Piece.Colour (board.square[squareIndex]);
 
 					zobristKey ^= piecesArray[pieceType, (pieceColour == Piece.White) ? Board.WhiteIndex : Board.BlackIndex, squareIndex];
 				}
