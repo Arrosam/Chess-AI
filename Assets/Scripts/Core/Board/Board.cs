@@ -12,9 +12,6 @@ namespace Chess {
 		// Stores piece code for each square on the board.
 		// Piece code is defined as piecetype | colour code
 		public int[] square;
-		public Status[] statusSquare;
-		private PieceHPSettingManager _pieceHpSetting;
-		private Status _noneStatus;
 
 		public bool WhiteToMove;
 		public int ColourToMove;
@@ -24,7 +21,7 @@ namespace Chess {
 		// Bits 0-3 store white and black kingside/queenside castling legality
 		// Bits 4-7 store file of ep square (starting at 1, so 0 = no ep square)
 		// Bits 8-13 captured piece
-		Stack<uint> gameStateHistory;
+		protected Stack<uint> gameStateHistory;
 		public uint currentGameState;
 
 		public int plyCount; // Total plies played in game
@@ -43,15 +40,15 @@ namespace Chess {
 
 		PieceList[] allPieceLists;
 
-		const uint whiteCastleKingsideMask =  0b1111111111111110;
-		const uint whiteCastleQueensideMask = 0b1111111111111101;
-		const uint blackCastleKingsideMask =  0b1111111111111011;
-		const uint blackCastleQueensideMask = 0b1111111111110111;
+		protected const uint whiteCastleKingsideMask =  0b1111111111111110;
+		protected const uint whiteCastleQueensideMask = 0b1111111111111101;
+		protected const uint blackCastleKingsideMask =  0b1111111111111011;
+		protected const uint blackCastleQueensideMask = 0b1111111111110111;
 
-		const uint whiteCastleMask = whiteCastleKingsideMask & whiteCastleQueensideMask;
-		const uint blackCastleMask = blackCastleKingsideMask & blackCastleQueensideMask;
+		protected const uint whiteCastleMask = whiteCastleKingsideMask & whiteCastleQueensideMask;
+		protected const uint blackCastleMask = blackCastleKingsideMask & blackCastleQueensideMask;
 
-		PieceList GetPieceList (int pieceType, int colourIndex) {
+		protected PieceList GetPieceList (int pieceType, int colourIndex) {
 			return allPieceLists[colourIndex * 8 + pieceType];
 		}
 
@@ -73,7 +70,6 @@ namespace Chess {
 			int moveFlag = move.MoveFlag;
 			bool isPromotion = move.IsPromotion;
 			bool isEnPassant = moveFlag == Move.Flag.EnPassantCapture;
-			Status statusOnTargetSquare = statusSquare[moveFrom];
 
 			// Handle non-En Passant captures
 			currentGameState |= (ushort) (capturedPieceType << 8);
@@ -106,8 +102,6 @@ namespace Chess {
 			// Update the board representation:
 			square[moveTo] = pieceOnTargetSquare;
 			square[moveFrom] = Piece.None;
-			statusSquare[moveTo] = statusOnTargetSquare;
-			statusSquare[moveFrom] =  new Status(_pieceHpSetting.GetPieceInitialHP(Piece.None));
 
 			// Pawn has moved two forwards, mark file with en-passant flag
 			if (moveFlag == Move.Flag.PawnTwoForward) {
@@ -171,7 +165,6 @@ namespace Chess {
             if (externalCall)
             {
 	            this.square[square] = Piece.None;
-	            statusSquare[square] = new Status(_pieceHpSetting.GetPieceInitialHP(Piece.None));
             }
 		}
 
@@ -336,7 +329,6 @@ namespace Chess {
 				square[squareIndex] = piece;
 				
 				int pieceType = Piece.PieceType (piece);
-				statusSquare[squareIndex] = new Status(_pieceHpSetting.GetPieceInitialHP(pieceType));
 				if (piece != Piece.None) {
 					int pieceColourIndex = (Piece.IsColour (piece, Piece.White)) ? WhiteIndex : BlackIndex;
 					if (Piece.IsSlidingPiece (piece)) {
@@ -376,16 +368,14 @@ namespace Chess {
 			ZobristKey = Zobrist.CalculateZobristKey (this);
 		}
 
-		void Initialize () {
+		protected void Initialize () {
 			square = new int[64];
-			statusSquare = new Status[64];
 			KingSquare = new int[2];
 
 			gameStateHistory = new Stack<uint> ();
 			ZobristKey = 0;
 			RepetitionPositionHistory = new Stack<ulong> ();
 			plyCount = 0;
-			_pieceHpSetting = PieceHPSettingManager.instance;
 
 			knights = new PieceList[] { new PieceList (10), new PieceList (10) };
 			pawns = new PieceList[] { new PieceList (8), new PieceList (8) };

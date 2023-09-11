@@ -8,7 +8,7 @@ namespace Chess
     public class StatusBoardTest : MonoBehaviour
     {
         public GameBoardManager gameBoardManager;
-        private Board _board;
+        private StatusBoard _board;
         private Status[] _statusArray;
         
         public void CheckStatus()
@@ -26,15 +26,25 @@ namespace Chess
                 return;
             }
             string stringBuilder = "";
-            for (int i = 0; i < 8; i++)
+            for (int i = 7; i >= 0; i--)
             {
                 for (int j = 0; j < 8; j++)
                 {
-                    stringBuilder += _statusArray[i*8+j].GetHP() + " ";
+                     stringBuilder += ToFixedStringLength(_statusArray[i * 8 + j].GetHP().ToString(), 4);
                 }
                 stringBuilder += "\n";
             }
             Debug.Log(stringBuilder);
+        }
+
+        private string ToFixedStringLength(string originalString, int length)
+        {
+            string newString = originalString;
+            while (newString.Length < length)
+            {
+                newString += " ";
+            }
+            return newString;
         }
     }
 }

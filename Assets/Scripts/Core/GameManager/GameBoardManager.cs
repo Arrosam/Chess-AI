@@ -6,7 +6,7 @@ namespace Chess.Game
     public class GameBoardManager : MonoBehaviour
     {
         public static GameBoardManager Instance { get; private set; }
-        public Board Board = new ();
+        public StatusBoard Board = new ();
         public Board SearchBoard { get; private set; } = new(); // Duplicate version of board used for ai search
         private void Awake()
         {
